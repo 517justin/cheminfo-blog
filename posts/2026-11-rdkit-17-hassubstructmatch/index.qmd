@@ -1,0 +1,70 @@
+---
+title: "這個分子有沒有 OH？"
+description: "《用 RDKit 玩化學》第 17 集：用 HasSubstructMatch 讓電腦在分子裡找出 OH。"
+date: 2026-11-11
+categories: ["用 RDKit 玩化學", "RDKit"]
+image: images/fallback.png
+draft: true
+include-after-body: ../../_rdkit-play/widget.html
+---
+
+*《用 RDKit 玩化學》第 17 集*
+
+酒精（乙醇）和甲醇都有一個 OH，咖啡因沒有。分子小的時候看一眼就知道，可是要從一萬個分子裡挑出有 OH 的，一個一個看就太累了，這種事交給電腦最適合。
+
+## 動手玩
+
+從選單挑一個分子，或在輸入框改 SMILES，看看電腦有沒有找到 OH。找到的話，下方結構圖裡的 OH 會塗上顏色。
+
+```{=html}
+<div class="rdkit-play" data-mode="substruct">
+<script type="application/json">
+{"query": "[OX2H]", "queryLabel": "OH",
+ "molecules": [
+  {"name": "酒精（乙醇）", "smiles": "CCO"},
+  {"name": "甲醇", "smiles": "CO"},
+  {"name": "醋酸（乙酸）", "smiles": "CC(=O)O"},
+  {"name": "咖啡因", "smiles": "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"},
+  {"name": "二氧化碳", "smiles": "O=C=O"},
+  {"name": "葡萄糖", "smiles": "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O"}
+]}
+</script>
+<figure class="rdkit-play-fallback">
+<img src="images/fallback.png" alt="酒精的結構圖，其中的 OH 塗上了顏色。">
+<figcaption>電腦在酒精裡找到 OH，並塗上顏色。</figcaption>
+</figure>
+</div>
+```
+
+## 剛才發生什麼事？
+
+電腦得先知道「OH」長什麼樣子，所以我們把 OH 寫成搜尋條件 `[OX2H]`，意思是「一個氧，總共接兩樣東西，其中一個是氫」。這個寫法不用記，知道代表 OH 就好。
+
+接著，`HasSubstructMatch` 會在分子裡逐一比對原子，看能不能找到符合條件的地方，答案只有「有」或「沒有」。這種找法叫做 **子結構搜尋**（substructure search）。
+
+為什麼不直接找字母 O？二氧化碳和咖啡因也有氧，但這些氧是用雙鍵接在碳上，旁邊沒有氫，不是 OH。子結構搜尋比對的是原子怎麼連接，不是 SMILES 裡有沒有某個字母。
+
+## 真正的程式
+
+```python
+from rdkit import Chem
+
+oh = Chem.MolFromSmarts("[OX2H]")   # 代表 OH 的搜尋條件
+for smi in ["CCO", "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"]:
+    print(smi, Chem.MolFromSmiles(smi).HasSubstructMatch(oh))
+```
+
+酒精印出 `True`，咖啡因印出 `False`。
+
+[![在 Colab 開啟](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/517justin/cheminfo-blog/blob/main/posts/2026-11-rdkit-17-hassubstructmatch/ep17.ipynb)
+[下載這一集的 notebook](ep17.ipynb)
+
+## 換你試
+
+- 在小框裡選葡萄糖，數數看塗了幾個 OH。下一集會讓電腦自己數。
+- 把程式裡的咖啡因換成 `"CO"`（甲醇），看看答案會不會變成 `True`。
+
+## 延伸閱讀
+
+- 《化學資訊學入門》[子結構搜尋與 SMARTS](https://517justin.github.io/cheminfo-intro/chapters/ch02/02-03-substructure-smarts.html)
+- RDKit 官方文件：[Substructure Searching](https://www.rdkit.org/docs/GettingStartedInPython.html#substructure-searching)

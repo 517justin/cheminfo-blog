@@ -1,0 +1,13 @@
+---
+title: "化學資訊學筆記"
+description: "繁體中文化學資訊學（Cheminformatics）教學與實作筆記，涵蓋 RDKit、分子指紋、QSAR、虛擬篩選等主題。"
+listing:
+  contents: posts
+  sort: "date desc"
+  type: default
+  categories: true
+  sort-ui: false
+  filter-ui: true
+page-layout: full
+title-block-banner: true
+---

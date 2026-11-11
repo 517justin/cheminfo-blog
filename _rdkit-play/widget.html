@@ -1,0 +1,191 @@
+<!-- 《用 RDKit 玩化學》共用小框。
+     用法：在文章裡放
+       <div class="rdkit-play" data-mode="parse">
+         <script type="application/json">{"molecules":[{"name":"二氧化碳","smiles":"O=C=O"}]}</script>
+         <figure class="rdkit-play-fallback">（載入失敗時顯示的備用圖）</figure>
+       </div>
+     模式（data-mode）：parse、canon、hs、draw、substruct。
+     勾選框用 "toggles" 指定，例如 ["coordgen", "hs"]（draw 模式可用）。
+     substruct 另需設定 "query"（SMARTS 字串）與 "queryLabel"（顯示用名稱）。 -->
+<style>
+.rdkit-play {
+  border: 1px solid #d0d7de;
+  border-radius: 8px;
+  padding: 1rem;
+  margin: 1.5rem 0;
+  background: #fff;
+}
+.rdkit-play .rp-row { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; margin-bottom: .75rem; }
+.rdkit-play label { display: flex; flex-direction: column; font-size: .9rem; gap: .25rem; }
+.rdkit-play label.rp-check { flex-direction: row; align-items: center; }
+.rdkit-play select, .rdkit-play input[type=text] {
+  font-size: 1rem; padding: .35rem .5rem; border: 1px solid #adb5bd; border-radius: 4px;
+}
+.rdkit-play input[type=text] { font-family: SFMono-Regular, Menlo, Consolas, monospace; min-width: 14rem; max-width: 100%; }
+.rdkit-play .rp-msg { font-size: 1rem; margin: .5rem 0; }
+.rdkit-play .rp-msg code { font-size: .95rem; }
+.rdkit-play .rp-bad { color: #b42318; }
+.rdkit-play .rp-svg svg { max-width: 100%; height: auto; display: block; }
+.rdkit-play .rp-status { color: #57606a; font-size: .9rem; }
+</style>
+<script src="https://unpkg.com/@rdkit/rdkit@2026.9.2/dist/RDKit_minimal.js"></script>
+<script>
+(function () {
+  const WASM = "https://unpkg.com/@rdkit/rdkit@2026.9.2/dist/RDKit_minimal.wasm";
+  let rdkit = null;
+  function loadRDKit() {
+    if (!rdkit) {
+      rdkit = (typeof window.initRDKitModule === "function")
+        ? window.initRDKitModule({ locateFile: () => WASM })
+        : Promise.reject(new Error("RDKit.js 沒有載入"));
+    }
+    return rdkit;
+  }
+
+  function el(tag, attrs, text) {
+    const e = document.createElement(tag);
+    Object.entries(attrs || {}).forEach(([k, v]) => e.setAttribute(k, v));
+    if (text !== undefined) e.textContent = text;
+    return e;
+  }
+
+  // 每次用完就釋放，避免 wasm 記憶體累積
+  function withMol(R, smiles, fn) {
+    const mol = smiles.trim() ? R.get_mol(smiles.trim()) : null;
+    if (!mol || !mol.is_valid()) { if (mol) mol.delete(); return fn(null); }
+    try { return fn(mol); } finally { mol.delete(); }
+  }
+
+  const SIZE = { width: 320, height: 240 };
+
+  const MODES = {
+    // 第 1 集：讀不讀得懂
+    parse(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        ui.say("電腦讀懂了：這個分子有 " + mol.get_num_atoms() + " 個原子（不算氫）。");
+        ui.draw(mol.get_svg(SIZE.width, SIZE.height));
+      });
+    },
+    // 第 2 集：整理成固定寫法
+    canon(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        ui.sayCode("你寫的：", smiles.trim(), "電腦整理後：", mol.get_smiles());
+        ui.draw(mol.get_svg(SIZE.width, SIZE.height));
+      });
+    },
+    // 第 4 集：顯示或隱藏氫
+    hs(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const withH = R.get_mol(mol.add_hs());
+        try {
+          ui.say("不算氫：" + mol.get_num_atoms() + " 個原子；把氫加上去：" + withH.get_num_atoms() + " 個原子。");
+          ui.draw((ui.checks.hs && ui.checks.hs.checked ? withH : mol).get_svg(SIZE.width, SIZE.height));
+        } finally { withH.delete(); }
+      });
+    },
+    // 第 13 集：畫出結構式
+    draw(R, smiles, ui) {
+      const altLayout = !!(ui.checks.coordgen && ui.checks.coordgen.checked);
+      const showH = !!(ui.checks.hs && ui.checks.hs.checked);
+      R.prefer_coordgen(altLayout);
+      try {
+        withMol(R, smiles, (mol) => {
+          if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+          ui.say(altLayout ? "現在用另一套方法排座標（CoordGen），同一個分子畫出來的樣子不一樣了。" : "");
+          if (!showH) { ui.draw(mol.get_svg(400, 300)); return; }
+          const withH = R.get_mol(mol.add_hs());
+          try { ui.draw(withH.get_svg(400, 300)); } finally { withH.delete(); }
+        });
+      } finally { R.prefer_coordgen(false); }
+    },
+    // 第 17 集：找有沒有某一小塊結構
+    substruct(R, smiles, ui, cfg) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const q = R.get_qmol(cfg.query);
+        try {
+          const hits = JSON.parse(mol.get_substruct_matches(q));
+          const label = cfg.queryLabel || cfg.query;
+          if (!hits.length) {
+            ui.say("沒有找到 " + label + "。");
+            ui.draw(mol.get_svg(SIZE.width, SIZE.height));
+            return;
+          }
+          const atoms = [...new Set(hits.flatMap((h) => h.atoms))];
+          const bonds = [...new Set(hits.flatMap((h) => h.bonds))];
+          ui.say("找到 " + hits.length + " 個 " + label + "，已經塗上顏色。");
+          ui.draw(mol.get_svg_with_highlights(JSON.stringify({ atoms, bonds, width: SIZE.width, height: SIZE.height })));
+        } finally { q.delete(); }
+      });
+    },
+  };
+
+  function setup(box) {
+    const mode = box.dataset.mode;
+    const cfgNode = box.querySelector('script[type="application/json"]');
+    const cfg = cfgNode ? JSON.parse(cfgNode.textContent) : {};
+    const mols = cfg.molecules || [];
+    const fallback = box.querySelector(".rdkit-play-fallback");
+    const status = el("p", { class: "rp-status", "aria-live": "polite" },
+      "正在載入 RDKit（約 2.4 MB，第一次會比較久）……");
+    box.prepend(status);
+
+    loadRDKit().then((R) => {
+      status.remove();
+      if (fallback) fallback.hidden = true;
+
+      const row = el("div", { class: "rp-row" });
+      const pickLabel = el("label", {}, "挑一個分子");
+      const pick = el("select");
+      mols.forEach((m, i) => pick.append(el("option", { value: String(i) }, m.name)));
+      pickLabel.append(pick);
+      const inLabel = el("label", {}, "在這裡改 SMILES，結構圖會畫在下方");
+      const input = el("input", { type: "text", spellcheck: "false", autocomplete: "off" });
+      inLabel.append(input);
+      row.append(pickLabel, inLabel);
+
+      // 勾選框：各集用 "toggles" 指定；hs 模式預設有「顯示氫原子」
+      const TOGGLES = { hs: "顯示氫原子", coordgen: "換一種排法" };
+      const checks = {};
+      (cfg.toggles || (mode === "hs" ? ["hs"] : [])).forEach((t) => {
+        const cl = el("label", { class: "rp-check" });
+        checks[t] = el("input", { type: "checkbox" });
+        cl.append(checks[t], document.createTextNode(" " + TOGGLES[t]));
+        row.append(cl);
+      });
+
+      const msg = el("p", { class: "rp-msg", "aria-live": "polite" });
+      const pic = el("div", { class: "rp-svg" });
+      box.append(row, msg, pic);
+
+      const ui = {
+        checks,
+        say(text, bad) { msg.textContent = text; msg.classList.toggle("rp-bad", !!bad); if (bad) pic.innerHTML = ""; },
+        sayCode(a, codeA, b, codeB) {
+          msg.textContent = ""; msg.classList.remove("rp-bad");
+          msg.append(a, el("code", {}, codeA), document.createElement("br"), b, el("code", {}, codeB));
+        },
+        // SVG 來自 RDKit 本身，不含使用者輸入的文字
+        draw(svg) { pic.innerHTML = svg; },
+      };
+
+      const run = () => MODES[mode](R, input.value, ui, cfg);
+      let timer = null;
+      pick.addEventListener("change", () => { input.value = mols[+pick.value].smiles; run(); });
+      input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(run, 250); });
+      Object.values(checks).forEach((c) => c.addEventListener("change", run));
+      if (mols.length) input.value = mols[0].smiles;
+      run();
+    }).catch(() => {
+      status.textContent = "RDKit 載入失敗，先看下面的結果圖；也可以用 Colab 跑程式。";
+    });
+  }
+
+  function init() { document.querySelectorAll(".rdkit-play").forEach(setup); }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
+  else init();
+})();
+</script>

@@ -1,0 +1,29 @@
+project:
+  type: website
+  output-dir: _site
+  # Only site pages; reports and notes at the root stay out of the build.
+  render:
+    - index.qmd
+    - about.qmd
+    - posts/*/index.qmd
+
+lang: zh-Hant
+# Quarto 沒有 zh-Hant 的介面翻譯，會退回簡體；改用台灣繁體用語檔（同書的做法）。
+language: _language-zh-TW.yml
+
+website:
+  # Repo：517justin/cheminfo-blog（GitHub Pages project site）
+  title: "電腦也會化學"
+  site-url: https://517justin.github.io/cheminfo-blog/
+  repo-url: https://github.com/517justin/cheminfo-blog
+  navbar:
+    right:
+      - about.qmd
+  open-graph: true
+  twitter-card: true
+
+format:
+  html:
+    theme: cosmo
+    toc: true
+    code-copy: true
