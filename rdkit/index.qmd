@@ -1,0 +1,117 @@
+---
+title: "用 RDKit 玩化學"
+subtitle: "電腦不只會選花生，還會化學"
+description: "一集三分鐘、一集一個 RDKit 功能，不用會寫程式，在網頁上直接玩分子。"
+image: ../images/series-card.png
+image-alt: "吉祥物小電腦想著二氧化碳分子"
+title-block-banner: true
+page-layout: full
+toc: false
+listing:
+  - id: recognize
+    contents:
+      - ../posts/2026-11-rdkit-01-molfromsmiles/index.qmd
+      - ../posts/2026-11-rdkit-02-moltosmiles/index.qmd
+      - ../posts/2026-11-rdkit-03-smiles-errors/index.qmd
+      - ../posts/2026-11-rdkit-04-addhs/index.qmd
+      - ../posts/2026-11-rdkit-05-getnumatoms/index.qmd
+      - ../posts/2026-11-rdkit-06-molwt/index.qmd
+      - ../posts/2026-11-rdkit-07-getneighbors/index.qmd
+      - ../posts/2026-11-rdkit-08-getatoms/index.qmd
+      - ../posts/2026-11-rdkit-09-getbonds/index.qmd
+      - ../posts/2026-11-rdkit-10-getringinfo/index.qmd
+      - ../posts/2026-11-rdkit-11-kekulize/index.qmd
+      - ../posts/2026-11-rdkit-12-getmolfrags/index.qmd
+    sort: filename
+    type: grid
+    grid-columns: 3
+    fields: [image, title]
+  - id: draw
+    contents:
+      - ../posts/2026-11-rdkit-13-moltoimage/index.qmd
+      - ../posts/2026-11-rdkit-14-molstogridimage/index.qmd
+      - ../posts/2026-11-rdkit-15-addatomindices/index.qmd
+      - ../posts/2026-11-rdkit-16-highlightatoms/index.qmd
+    sort: filename
+    type: grid
+    grid-columns: 3
+    fields: [image, title]
+  - id: search
+    contents:
+      - ../posts/2026-11-rdkit-17-hassubstructmatch/index.qmd
+      - ../posts/2026-11-rdkit-18-getsubstructmatches/index.qmd
+    sort: filename
+    type: grid
+    grid-columns: 3
+    fields: [image, title]
+  - id: modify
+    contents:
+      - ../posts/2026-11-rdkit-19-deletesubstructs/index.qmd
+      - ../posts/2026-11-rdkit-20-reactionfromsmarts/index.qmd
+    sort: filename
+    type: grid
+    grid-columns: 3
+    fields: [image, title]
+  - id: features
+    contents:
+      - ../posts/2026-11-rdkit-21-moltoinchikey/index.qmd
+      - ../posts/2026-11-rdkit-22-mollogp/index.qmd
+      - ../posts/2026-11-rdkit-23-morganfingerprint/index.qmd
+      - ../posts/2026-11-rdkit-24-tanimotosimilarity/index.qmd
+      - ../posts/2026-11-rdkit-25-findmcs/index.qmd
+      - ../posts/2026-11-rdkit-26-embedmolecule/index.qmd
+    sort: filename
+    type: grid
+    grid-columns: 3
+    fields: [image, title]
+---
+
+::: {.series-intro}
+標語改編自台灣一支牛奶花生廣告的台詞「電腦也會選土豆」（台語，土豆就是花生），廣告由吳念真導演、林李秀主演。[^ad]
+
+這個系列想讓更多人知道，化學也可以交給電腦來處理。每一集從一個問題開始，例如「電腦怎麼讀懂二氧化碳？」，再用一個 RDKit 功能回答它。**RDKit** 是一套免費、開放原始碼的化學工具，化學研究和藥物開發都常用到它。
+
+- **三分鐘看完**：一集三、四百字，用生活裡聽過的分子當例子，像水、酒精、咖啡因。
+- **不用會寫程式**：每集都有一個小框，選一個分子或改幾個字，馬上看到結果。第一次打開小框要下載約 2.4 MB，請稍等幾秒。
+- **想看程式也可以**：每集附 5 行左右的 Python 程式，按「Open in Colab」就能在瀏覽器裡執行。
+- **每集都能單獨看**：從哪一集開始都可以，照順序看會最順。
+
+讀完想再深入，可以接著看《[化學資訊學入門](https://517justin.github.io/cheminfo-intro/)》。
+
+[^ad]: 廣告與主演資訊見[自由時報報導](https://ent.ltn.com.tw/news/breakingnews/263516)與[窩客島介紹](https://www.walkerland.com.tw/subject/view/256829)。
+:::
+
+## 電腦怎麼認識分子（第 1–12 集）
+
+先讓電腦讀進分子，再數原子、看鍵、找環。
+
+::: {#recognize}
+:::
+
+## 把分子畫出來（第 13–16 集）
+
+把結構式畫成圖，還能排排站、編號、塗顏色。
+
+::: {#draw}
+:::
+
+## 在分子裡找東西（第 17–18 集）
+
+請電腦幫忙找出分子裡的某一塊結構。
+
+::: {#search}
+:::
+
+## 改造分子（第 19–20 集）
+
+拿掉一塊結構，或照規則把一個分子變成另一個。
+
+::: {#modify}
+:::
+
+## 分子的特徵（第 21–26 集）
+
+身分證、條碼、相似度，還有分子的立體形狀。
+
+::: {#features}
+:::

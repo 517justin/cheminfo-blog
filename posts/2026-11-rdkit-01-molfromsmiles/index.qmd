@@ -3,12 +3,10 @@ title: "電腦怎麼讀懂二氧化碳？"
 description: "《用 RDKit 玩化學》第 1 集：用 MolFromSmiles 把一串字變成電腦看得懂的分子。"
 date: 2026-11-11
 categories: ["用 RDKit 玩化學", "RDKit"]
-image: images/fallback.png
-draft: true
+image: images/card.png
+image-alt: "吉祥物小電腦和這一集的分子球棒模型"
 include-after-body: ../../_rdkit-play/widget.html
 ---
-
-*《用 RDKit 玩化學》第 1 集*
 
 二氧化碳的化學式是 CO2，結構式畫成 O=C=O。不過電腦沒有眼睛，看不懂畫在紙上的結構式，要先把分子寫成一串字，電腦才讀得進去。這串字叫做 **SMILES**（Simplified Molecular Input Line Entry System）。
 
@@ -42,7 +40,7 @@ include-after-body: ../../_rdkit-play/widget.html
 
 這個步驟是把 SMILES 轉成 **分子物件**（molecule object）。之後算分子量、找結構、比較兩個分子像不像，都要先有分子物件，所以整個系列就從這一步開始。
 
-細心一點會發現，水的 SMILES 只有一個 `O`，甲烷只有一個 `C`。SMILES 平常不寫氫，由 RDKit 自動補上。氫到底躲在哪裡，第 4 集再來看。
+細心一點會發現，水的 SMILES 只有一個 `O`，甲烷只有一個 `C`。SMILES 平常不寫氫，由 RDKit 自動補上。
 
 ## 真正的程式
 
@@ -61,7 +59,7 @@ mol   # 在 Colab 或 Jupyter 裡，最後一行會直接畫出分子
 ## 換你試
 
 - 在輸入框打 `CCO`，看看酒精（乙醇）長什麼樣子。
-- 故意少打一個字，改成 `O=C=`，看看電腦怎麼回應。打錯字的情況，第 3 集再仔細聊。
+- 故意少打一個字，改成 `O=C=`，看看電腦怎麼回應。
 
 ## 延伸閱讀
 

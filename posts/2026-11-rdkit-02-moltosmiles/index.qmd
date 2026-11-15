@@ -3,12 +3,10 @@ title: "同一個分子，為什麼有好幾種寫法？"
 description: "《用 RDKit 玩化學》第 2 集：用 MolToSmiles 把不同寫法的 SMILES 整理成同一串字。"
 date: 2026-11-11
 categories: ["用 RDKit 玩化學", "RDKit"]
-image: images/fallback.png
-draft: true
+image: images/card.png
+image-alt: "吉祥物小電腦和這一集的分子球棒模型"
 include-after-body: ../../_rdkit-play/widget.html
 ---
-
-*《用 RDKit 玩化學》第 2 集*
 
 酒精（乙醇）的 SMILES 可以從碳開始寫成 `CCO`，也可以從氧開始寫成 `OCC`，還可以寫成 `C(O)C`，括號代表從中間那個碳分出去的支鏈。三種寫法都是同一個酒精。
 

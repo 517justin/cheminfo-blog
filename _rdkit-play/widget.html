@@ -4,9 +4,13 @@
          <script type="application/json">{"molecules":[{"name":"二氧化碳","smiles":"O=C=O"}]}</script>
          <figure class="rdkit-play-fallback">（載入失敗時顯示的備用圖）</figure>
        </div>
-     模式（data-mode）：parse、canon、hs、draw、substruct。
+     模式（data-mode）：parse、canon、hs、draw、substruct、step、filter、count、rings、inchikey、
+       formula、compare、atoms、bonds、kekule、ions、neighbors、
+       grid、pairdraw、pick、delete、reaction、logp、fingerprint、similarity、mcs、spin。
+     compare 用 "pairs"：[{"name": "...", "a": "SMILES", "b": "SMILES"}] 取代 "molecules"。
      勾選框用 "toggles" 指定，例如 ["coordgen", "hs"]（draw 模式可用）。
-     substruct 另需設定 "query"（SMARTS 字串）與 "queryLabel"（顯示用名稱）。 -->
+     substruct、step 另需設定 "query"（SMARTS 字串）與 "queryLabel"（顯示用名稱）。
+     filter 一次排出所有分子，另需設定 "targets"：[{"label": "OH", "query": "[OX2H]"}, ...]。 -->
 <style>
 .rdkit-play {
   border: 1px solid #d0d7de;
@@ -27,6 +31,46 @@
 .rdkit-play .rp-bad { color: #b42318; }
 .rdkit-play .rp-svg svg { max-width: 100%; height: auto; display: block; }
 .rdkit-play .rp-status { color: #57606a; font-size: .9rem; }
+.rdkit-play .rp-errline { font-size: 1.15rem; margin: .25rem 0 0; }
+.rdkit-play .rp-errline code { font-family: SFMono-Regular, Menlo, Consolas, monospace; font-size: 1.15rem; background: #f8f9fa; padding: .2rem .4rem; border-radius: 4px; letter-spacing: .05em; }
+.rdkit-play .rp-errchar { color: #b42318; background: #fde2e1; border-bottom: 3px solid #b42318; }
+.rdkit-play .rp-errnote { color: #b42318; font-size: .95rem; margin-left: .5rem; }
+.rdkit-play button { font-size: .95rem; padding: .35rem .8rem; border: 1px solid #adb5bd; border-radius: 4px; background: #f6f8fa; cursor: pointer; }
+.rdkit-play button.rp-on { background: #0b7285; color: #fff; border-color: #0b7285; }
+.rdkit-play button:disabled { opacity: .45; cursor: default; }
+.rdkit-play .rp-buttons { display: flex; flex-wrap: wrap; gap: .5rem; margin: .25rem 0 .5rem; }
+.rdkit-play .rp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: .6rem; }
+.rdkit-play .rp-card { border: 2px solid #d0d7de; border-radius: 8px; padding: .3rem; text-align: center; font-size: .9rem; transition: opacity .2s; }
+.rdkit-play .rp-card svg { width: 100%; height: auto; display: block; }
+.rdkit-play .rp-card.rp-yes { border-color: #0b7285; background: #e6f6f8; }
+.rdkit-play .rp-card.rp-no { opacity: .4; }
+.rdkit-play .rp-mark { font-weight: 600; }
+.rdkit-play .rp-two { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+@media (max-width: 600px) { .rdkit-play .rp-two { grid-template-columns: 1fr; } }
+.rdkit-play .rp-panel { border: 1px solid #d0d7de; border-radius: 8px; padding: .5rem; font-size: .95rem; }
+.rdkit-play .rp-panel h4 { font-size: 1rem; margin: 0 0 .35rem; }
+.rdkit-play .rp-panel svg { width: 100%; height: auto; display: block; }
+.rdkit-play table.rp-table { border-collapse: collapse; margin: .5rem 0; font-size: .95rem; }
+.rdkit-play .rp-table th, .rdkit-play .rp-table td { border-bottom: 1px solid #e9ecef; padding: .25rem .75rem; text-align: right; }
+.rdkit-play .rp-table th:first-child, .rdkit-play .rp-table td:first-child { text-align: left; }
+.rdkit-play .rp-table tr.rp-click { cursor: pointer; }
+.rdkit-play .rp-table tr.rp-click:hover, .rdkit-play .rp-table tr.rp-on { background: #e6f6f8; }
+.rdkit-play .rp-table tfoot td { font-weight: 600; border-bottom: none; }
+.rdkit-play .rp-legend { display: flex; flex-wrap: wrap; gap: .4rem 1rem; margin: .25rem 0 .5rem; font-size: .95rem; }
+.rdkit-play .rp-scale { position: relative; height: 1.4rem; border-radius: 4px; margin: 1.6rem 0 .3rem;
+  background: linear-gradient(90deg, #4dabf7, #e9ecef 50%, #fcc419); }
+.rdkit-play .rp-scale .rp-pin { position: absolute; top: -.5rem; width: 4px; height: 2.4rem; background: #212529; border-radius: 2px; transform: translateX(-2px); }
+.rdkit-play .rp-scale .rp-pinlabel { position: absolute; top: -1.6rem; transform: translateX(-50%); font-size: .85rem; font-weight: 600; white-space: nowrap; }
+.rdkit-play .rp-scale-ends { display: flex; justify-content: space-between; font-size: .85rem; color: #57606a; }
+.rdkit-play .rp-bars { display: grid; grid-template-columns: repeat(32, 1fr); gap: 2px; margin: .4rem 0; }
+.rdkit-play .rp-bars span { height: 1.3rem; background: #e9ecef; border-radius: 2px; }
+.rdkit-play .rp-bars span.on { background: #212529; }
+.rdkit-play .rp-bars span.both { background: #0b7285; }
+.rdkit-play .rp-bars span.diff { background: #fab005; }
+.rdkit-play .rp-barlabel { font-size: .9rem; color: #57606a; margin: .6rem 0 0; }
+.rdkit-play .rp-3d { width: 100%; max-width: 420px; height: auto; display: block; margin: 0 auto; touch-action: none; cursor: grab; background: #f8f9fa; border-radius: 8px; }
+.rdkit-play .rp-swatch { display: inline-block; width: 1.6em; height: .55em; border-radius: 3px; margin-right: .3rem; vertical-align: middle; }
+.rdkit-play .rp-yes .rp-mark { color: #0b7285; }
 </style>
 <script src="https://unpkg.com/@rdkit/rdkit@2026.9.2/dist/RDKit_minimal.js"></script>
 <script>
@@ -56,13 +100,111 @@
     try { return fn(mol); } finally { mol.delete(); }
   }
 
+  // 第 3 集：讀取 RDKit 的錯誤訊息，翻成中文
+  let errLog = null;
+  function startErrorLog(R) {
+    if (errLog || typeof R.set_log_capture !== "function") return;
+    try { errLog = R.set_log_capture("rdApp.error"); } catch (e) { errLog = null; }
+  }
+  function takeErrors() {
+    if (!errLog) return "";
+    const t = errLog.get_buffer();
+    errLog.clear_buffer();
+    return t;
+  }
+  // 括號錯誤：自己找出沒有配對的那個括號（RDKit 指的常是讀到結尾才發現的位置）
+  function unmatchedParen(smiles) {
+    const open = [];
+    for (let k = 0; k < smiles.length; k++) {
+      if (smiles[k] === "(") open.push(k);
+      else if (smiles[k] === ")") { if (!open.length) return k; open.pop(); }
+    }
+    return open.length ? open[open.length - 1] : -1;
+  }
+  function explainError(text) {
+    const lines = text.split("\n").map((l) => l.replace(/^\[[^\]]*\]\s*/, "")).filter(Boolean);
+    const all = lines.join("\n");
+    let m, reason = "";
+    if (/extra open parenthes/.test(all)) reason = "括號沒有關起來。";
+    else if (/extra close parenthes/.test(all)) reason = "多了一個右括號。";
+    else if (/unclosed ring/.test(all)) reason = "環沒有閉合，寫了開環的數字，卻沒有對應的結尾。";
+    else if ((m = all.match(/Explicit valence for atom # (\d+) (\w+), (\d+), is greater than permitted/)))
+      reason = "第 " + (+m[1] + 1) + " 個原子（" + m[2] + "）接了 " + m[3] + " 根鍵，超過它能接的數量。";
+    else if (/Can't kekulize/.test(all)) reason = "芳香環的寫法有問題，排不出單雙鍵交替的結構。";
+    else if ((m = all.match(/check for mistakes around position (\d+)/))) reason = "第 " + m[1] + " 個字附近有問題。";
+    // RDKit 用兩行標出錯誤位置：上一行是字串，下一行的 ^ 指著出問題的字
+    const i = lines.findIndex((l) => /^~*\^$/.test(l));
+    return i > 0 ? { reason, snippet: lines[i - 1], caret: lines[i].indexOf("^") } : { reason, snippet: "", caret: -1 };
+  }
+
+
+  // ---------- 第三批：從 get_json() 讀出原子和鍵 ----------
+  // 原子序 → [元素符號, 原子量（和 RDKit 2026.9.1 的週期表相同）, 中文名稱]
+  const ELEMENTS = {
+    1: ["H", 1.008, "氫"], 3: ["Li", 6.941, "鋰"], 5: ["B", 10.812, "硼"], 6: ["C", 12.011, "碳"],
+    7: ["N", 14.007, "氮"], 8: ["O", 15.999, "氧"], 9: ["F", 18.998, "氟"], 11: ["Na", 22.99, "鈉"],
+    12: ["Mg", 24.305, "鎂"], 13: ["Al", 26.982, "鋁"], 14: ["Si", 28.086, "矽"], 15: ["P", 30.974, "磷"],
+    16: ["S", 32.067, "硫"], 17: ["Cl", 35.453, "氯"], 19: ["K", 39.098, "鉀"], 20: ["Ca", 40.078, "鈣"],
+    26: ["Fe", 55.845, "鐵"], 29: ["Cu", 63.546, "銅"], 30: ["Zn", 65.39, "鋅"], 35: ["Br", 79.904, "溴"],
+    53: ["I", 126.904, "碘"],
+  };
+  const elem = (z) => ELEMENTS[z] || ["#" + z, null, "原子序 " + z + " 的元素"];
+
+  function molInfo(mol) {
+    const m = JSON.parse(mol.get_json()).molecules[0];
+    const ext = (m.extensions || []).find((x) => x.name === "rdkitRepresentation") || {};
+    const arom = new Set(ext.aromaticBonds || []);
+    return {
+      atoms: (m.atoms || []).map((a) => ({ z: a.z === undefined ? 6 : a.z, h: a.impHs || 0, chg: a.chg || 0 })),
+      bonds: (m.bonds || []).map((b, i) => ({ atoms: b.atoms, bo: b.bo === undefined ? 1 : b.bo, arom: arom.has(i) })),
+    };
+  }
+  // 每種元素有幾個（氫包含沒寫出來的）
+  function elementCounts(info) {
+    const n = {};
+    info.atoms.forEach((a) => {
+      const sym = elem(a.z)[0];
+      n[sym] = (n[sym] || 0) + 1;
+      if (a.h) n.H = (n.H || 0) + a.h;
+    });
+    return n;
+  }
+  // 分子式：有碳時碳、氫在前，其餘照字母順序（和 CalcMolFormula 相同）
+  function hillOrder(n) {
+    const keys = Object.keys(n).sort();
+    return n.C ? ["C", "H"].filter((k) => n[k]).concat(keys.filter((k) => k !== "C" && k !== "H")) : keys;
+  }
+  function formulaOf(info) {
+    const n = elementCounts(info);
+    const order = hillOrder(n);
+    const chg = info.atoms.reduce((t, a) => t + a.chg, 0);
+    const tail = chg ? (Math.abs(chg) > 1 ? Math.abs(chg) : "") + (chg > 0 ? "+" : "-") : "";
+    return order.map((k) => k + (n[k] > 1 ? n[k] : "")).join("") + tail;
+  }
+  const signed = (c) => (c > 0 ? "+" + c : c < 0 ? "−" + -c : "0");
+  const SYM2Z = Object.fromEntries(Object.entries(ELEMENTS).map(([z, e]) => [e[0], +z]));
+
+  // 找不到時 RDKit.js 回傳 {}，統一成空陣列
+  function matches(mol, q) {
+    const r = JSON.parse(mol.get_substruct_matches(q));
+    return Array.isArray(r) ? r : [];
+  }
+
   const SIZE = { width: 320, height: 240 };
 
   const MODES = {
     // 第 1 集：讀不讀得懂
     parse(R, smiles, ui) {
+      takeErrors();
       withMol(R, smiles, (mol) => {
-        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        if (!mol) {
+          const e = explainError(takeErrors());
+          ui.say("電腦讀不懂這串字" + (e.reason ? "：" + e.reason : "，可能打錯了。"), true);
+          const paren = /括號/.test(e.reason) ? unmatchedParen(smiles.trim()) : -1;
+          if (paren >= 0) ui.errorAt(smiles.trim(), paren);
+          else if (e.snippet) ui.errorAt(e.snippet, e.caret);
+          return;
+        }
         ui.say("電腦讀懂了：這個分子有 " + mol.get_num_atoms() + " 個原子（不算氫）。");
         ui.draw(mol.get_svg(SIZE.width, SIZE.height));
       });
@@ -101,13 +243,54 @@
         });
       } finally { R.prefer_coordgen(false); }
     },
+    // 第 5 集：數原子和鍵
+    count(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        if (!(ui.checks.hcount && ui.checks.hcount.checked)) {
+          ui.say("這個分子有 " + mol.get_num_atoms() + " 個原子、" + mol.get_num_bonds() + " 個鍵（不算氫）。");
+          ui.draw(mol.get_svg(SIZE.width, SIZE.height));
+          return;
+        }
+        const withH = R.get_mol(mol.add_hs());
+        try {
+          ui.say("把氫算進去：" + withH.get_num_atoms() + " 個原子、" + withH.get_num_bonds() + " 個鍵。");
+          ui.draw(withH.get_svg(SIZE.width, SIZE.height));
+        } finally { withH.delete(); }
+      });
+    },
+    // 第 10 集：找環，環上的原子塗色
+    rings(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const m = JSON.parse(mol.get_json()).molecules[0];
+        const ext = (m.extensions || []).find((x) => x.atomRings) || {};
+        const rings = ext.atomRings || [];
+        if (!rings.length) { ui.say("這個分子沒有環。"); ui.draw(mol.get_svg(SIZE.width, SIZE.height)); return; }
+        const atoms = [...new Set(rings.flat())];
+        const bonds = [];
+        (m.bonds || []).forEach((b, i) => {
+          if (rings.some((r) => r.includes(b.atoms[0]) && r.includes(b.atoms[1]))) bonds.push(i);
+        });
+        ui.say("有 " + rings.length + " 個環，環上的原子已經塗上顏色。");
+        ui.draw(mol.get_svg_with_highlights(JSON.stringify({ atoms, bonds, width: SIZE.width, height: SIZE.height })));
+      });
+    },
+    // 第 21 集：分子的身分證 InChIKey
+    inchikey(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        ui.sayCode("你寫的：", smiles.trim(), "身分證號碼（InChIKey）：", R.get_inchikey_for_inchi(mol.get_inchi()));
+        ui.draw(mol.get_svg(SIZE.width, SIZE.height));
+      });
+    },
     // 第 17 集：找有沒有某一小塊結構
     substruct(R, smiles, ui, cfg) {
       withMol(R, smiles, (mol) => {
         if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
         const q = R.get_qmol(cfg.query);
         try {
-          const hits = JSON.parse(mol.get_substruct_matches(q));
+          const hits = matches(mol, q);
           const label = cfg.queryLabel || cfg.query;
           if (!hits.length) {
             ui.say("沒有找到 " + label + "。");
@@ -121,7 +304,856 @@
         } finally { q.delete(); }
       });
     },
+
+    // 第 6 集：分子式和分子量，列出加總過程
+    formula(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const info = molInfo(mol);
+        const amw = JSON.parse(mol.get_descriptors()).amw;
+        ui.say("分子式 " + formulaOf(info) + "，分子量 " + amw.toFixed(2) + "。");
+        ui.draw(mol.get_svg(SIZE.width, SIZE.height));
+        const n = elementCounts(info);
+        const t = el("table", { class: "rp-table" });
+        const head = el("tr");
+        ["元素", "幾個", "每個原子的質量", "小計"].forEach((h) => head.append(el("th", {}, h)));
+        t.append(el("thead"));
+        t.firstChild.append(head);
+        const body = el("tbody");
+        const syms = hillOrder(n);
+        syms.forEach((sym) => {
+          const e = elem(SYM2Z[sym]);
+          const tr = el("tr");
+          tr.append(el("td", {}, e[2] + " " + sym), el("td", {}, String(n[sym])),
+            el("td", {}, e[1] === null ? "?" : e[1].toFixed(3)),
+            el("td", {}, e[1] === null ? "?" : (e[1] * n[sym]).toFixed(3)));
+          body.append(tr);
+        });
+        const foot = el("tfoot");
+        const tr = el("tr");
+        tr.append(el("td", {}, "加起來"), el("td"), el("td"), el("td", {}, amw.toFixed(3)));
+        foot.append(tr);
+        t.append(body, foot);
+        ui.pic.append(t);
+      });
+    },
+    // 第 8 集：每個原子是什麼元素，點表格的一列就塗出那個原子
+    atoms(R, smiles, ui) {
+      withMol(R, smiles, (mol0) => {
+        if (!mol0) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const showH = !!(ui.checks.hs && ui.checks.hs.checked);
+        const molblock = showH ? mol0.add_hs() : null;
+        const mol = showH ? R.get_mol(molblock) : mol0;
+        try {
+          const info = molInfo(mol);
+          const n = {};
+          info.atoms.forEach((a) => { const e = elem(a.z); n[e[2]] = (n[e[2]] || 0) + 1; });
+          ui.say("共 " + info.atoms.length + " 個原子：" + Object.entries(n).map(([k, v]) => k + " " + v + " 個").join("、") + "。點表格裡的一列，圖上就會塗出那個原子。");
+          const svgFor = (sel) => mol.get_svg_with_highlights(JSON.stringify(
+            { addAtomIndices: true, width: 400, height: 300, atoms: sel }));
+          const pic = el("div");
+          pic.innerHTML = svgFor([]);
+          const t = el("table", { class: "rp-table" });
+          const head = el("tr");
+          ["編號", "元素", "符號"].forEach((h) => head.append(el("th", {}, h)));
+          t.append(head);
+          const svgs = info.atoms.map((a, i) => svgFor([i]));  // 先畫好，點選時不用再碰已釋放的分子
+          info.atoms.forEach((a, i) => {
+            const e = elem(a.z);
+            const tr = el("tr", { class: "rp-click", tabindex: "0" });
+            tr.append(el("td", {}, String(i)), el("td", {}, e[2]), el("td", {}, e[0]));
+            const choose = () => {
+              t.querySelectorAll("tr.rp-on").forEach((r) => r.classList.remove("rp-on"));
+              tr.classList.add("rp-on");
+              pic.innerHTML = svgs[i];
+            };
+            tr.addEventListener("click", choose);
+            tr.addEventListener("keydown", (ev) => { if (ev.key === "Enter") choose(); });
+            t.append(tr);
+          });
+          ui.pic.innerHTML = "";
+          ui.pic.append(pic, t);
+        } finally { if (showH) mol.delete(); }
+      });
+    },
+    // 第 9 集：依鍵的種類塗不同顏色
+    bonds(R, smiles, ui) {
+      const KINDS = [
+        ["單鍵", [0.55, 0.75, 1.0], (b) => !b.arom && b.bo === 1],
+        ["雙鍵", [1.0, 0.65, 0.3], (b) => !b.arom && b.bo === 2],
+        ["三鍵", [0.8, 0.5, 1.0], (b) => !b.arom && b.bo === 3],
+        ["芳香鍵", [0.4, 0.8, 0.4], (b) => b.arom],
+      ];
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const info = molInfo(mol);
+        const colors = {}, bonds = [];
+        const count = KINDS.map(() => 0);
+        info.bonds.forEach((b, i) => {
+          const k = KINDS.findIndex((K) => K[2](b));
+          if (k < 0) return;
+          count[k]++;
+          bonds.push(i);
+          colors[i] = KINDS[k][1];
+        });
+        ui.say("共 " + info.bonds.length + " 個鍵，依種類塗上不同顏色。");
+        ui.draw(mol.get_svg_with_highlights(JSON.stringify({
+          bonds, atoms: [], highlightBondColors: colors, kekulize: false, width: 400, height: 300 })));
+        const legend = el("div", { class: "rp-legend" });
+        KINDS.forEach((K, k) => {
+          const item = el("span");
+          const sw = el("span", { class: "rp-swatch" });
+          sw.style.background = "rgb(" + K[1].map((v) => Math.round(v * 255)).join(",") + ")";
+          item.append(sw, K[0] + " " + count[k] + " 個");
+          legend.append(item);
+        });
+        ui.pic.prepend(legend);
+      });
+    },
+    // 第 11 集：芳香寫法和單雙鍵交替寫法並排
+    kekule(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const info = molInfo(mol);
+        const nArom = info.bonds.filter((b) => b.arom).length;
+        const kek = R.get_mol(mol.get_molblock());
+        try {
+          kek.convert_to_kekule_form();
+          ui.say(nArom ? "電腦把這個分子當成有芳香環（" + nArom + " 個芳香鍵）。左右兩邊是同一個分子的兩種寫法。"
+                       : "這個分子沒有芳香環，兩種寫法一樣。");
+          const two = el("div", { class: "rp-two" });
+          const panel = (title, smi, svg) => {
+            const p = el("div", { class: "rp-panel" });
+            p.append(el("h4", {}, title), el("code", {}, smi));
+            const d = el("div");
+            d.innerHTML = svg;  // SVG 來自 RDKit
+            p.append(d);
+            return p;
+          };
+          two.append(
+            panel("芳香寫法（虛線代表芳香鍵）", mol.get_smiles(),
+              mol.get_svg_with_highlights(JSON.stringify({ kekulize: false, width: 300, height: 220 }))),
+            panel("單雙鍵交替寫法", kek.get_smiles(), kek.get_svg(300, 220)));
+          ui.pic.innerHTML = "";
+          ui.pic.append(two);
+        } finally { kek.delete(); }
+      });
+    },
+    // 第 12 集：用 . 分開的離子，拆成一塊一塊
+    ions(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const list = mol.get_frags().molList;
+        try {
+          const grid = el("div", { class: "rp-grid" });
+          const charges = [];
+          for (let i = 0; i < list.size(); i++) {
+            const f = list.at(i);
+            try {
+              const info = molInfo(f);
+              const c = info.atoms.reduce((t, a) => t + a.chg, 0);
+              charges.push(c);
+              const card = el("div", { class: "rp-card" });
+              const d = el("div");
+              d.innerHTML = f.get_svg(180, 135);  // SVG 來自 RDKit
+              card.append(d, el("div", {}, "第 " + (i + 1) + " 塊：" + formulaOf(info)),
+                el("div", { class: "rp-mark" }, "電荷 " + signed(c)));
+              grid.append(card);
+            } finally { f.delete(); }
+          }
+          const total = charges.reduce((a, b) => a + b, 0);
+          ui.say(charges.length === 1 ? "只有 1 塊，沒有用 . 分開的部分，電荷 " + signed(total) + "。"
+            : "拆成 " + charges.length + " 塊。電荷加起來：" + charges.map(signed).join("、") + "，合計 " + signed(total) + "。");
+          ui.pic.innerHTML = "";
+          ui.pic.append(grid);
+        } finally { list.delete(); }
+      });
+    },
+
+    // 第 7 集：點一個原子，看它旁邊接了誰
+    neighbors(R, smiles, ui) {
+      withMol(R, smiles, (mol0) => {
+        if (!mol0) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const showH = !!(ui.checks.hs && ui.checks.hs.checked);
+        const mol = showH ? R.get_mol(mol0.add_hs()) : mol0;
+        if (ui.state.key !== smiles.trim()) { ui.state.key = smiles.trim(); ui.state.atom = undefined; }
+        try {
+          const info = molInfo(mol);
+          const nb = info.atoms.map(() => []);
+          info.bonds.forEach((b, i) => {
+            nb[b.atoms[0]].push([b.atoms[1], i]);
+            nb[b.atoms[1]].push([b.atoms[0], i]);
+          });
+          const name = (i) => i + " 號" + elem(info.atoms[i].z)[2];
+          // 先把每個原子被選到時的圖和說明準備好，之後點按鈕不用再碰已釋放的分子
+          const views = info.atoms.map((a, i) => {
+            const near = nb[i].map((x) => x[0]);
+            const colors = { [i]: [0.3, 0.75, 0.82] };
+            near.forEach((j) => { colors[j] = [1.0, 0.7, 0.35]; });
+            const svg = mol.get_svg_with_highlights(JSON.stringify({
+              addAtomIndices: true, width: 400, height: 300,
+              atoms: [i, ...near], bonds: [], highlightAtomColors: colors }));
+            let text = name(i) + "有 " + near.length + " 個鄰居" + (near.length ? "：" + near.map(name).join("、") + "。" : "。");
+            if (a.h) text += "另外還接了 " + a.h + " 個氫，SMILES 沒有寫出來，所以沒算在鄰居裡。";
+            return { svg, text };
+          });
+          const bar = el("div", { class: "rp-buttons" });
+          const pic = el("div");
+          const choose = (i) => {
+            bar.querySelectorAll("button").forEach((b, k) => b.classList.toggle("rp-on", k === i));
+            ui.say(views[i].text);
+            pic.innerHTML = views[i].svg;  // SVG 來自 RDKit
+            ui.state.atom = i;
+          };
+          info.atoms.forEach((a, i) => {
+            const b = el("button", { type: "button" }, i + " " + elem(a.z)[0]);
+            b.addEventListener("click", () => choose(i));
+            bar.append(b);
+          });
+          ui.pic.innerHTML = "";
+          const legend = el("div", { class: "rp-legend" });
+          [["rgb(77,191,209)", "選到的原子"], ["rgb(255,179,89)", "它的鄰居（直接相連的原子）"]].forEach(([c, t]) => {
+            const sw = el("span", { class: "rp-swatch" });
+            sw.style.background = c;
+            const item = el("span");
+            item.append(sw, t);
+            legend.append(item);
+          });
+          ui.pic.append(el("p", { class: "rp-status" }, "點一個原子編號："), bar, legend, pic);
+          const start = ui.state.atom !== undefined && ui.state.atom < info.atoms.length ? ui.state.atom : Math.min(1, info.atoms.length - 1);
+          choose(start);
+        } finally { if (showH) mol.delete(); }
+      });
+    },
+
+    // 第 16 集：輸入原子編號，塗上顏色
+    pick(R, smiles, ui, cfg) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const n = mol.get_num_atoms();
+        const raw = ui.extra.value.trim();
+        const nums = raw ? raw.split(/[\s,，、]+/).filter(Boolean) : [];
+        const bad = nums.filter((x) => !/^\d+$/.test(x) || +x >= n);
+        const atoms = [...new Set(nums.filter((x) => !bad.includes(x)).map(Number))];
+        const opts = { addAtomIndices: true, width: 400, height: 300, atoms, bonds: [] };
+        ui.draw(mol.get_svg_with_highlights(JSON.stringify(opts)));
+        if (bad.length) ui.say("這個分子的編號只有 0 到 " + (n - 1) + "，「" + bad.join("、") + "」不是其中的編號。", false);
+        else if (!atoms.length) ui.say("在「要塗色的原子編號」輸入編號，例如 2 或 0,1。");
+        else ui.say("塗上顏色的原子：" + atoms.join("、") + " 號。");
+      });
+    },
+    // 第 19 集：把符合條件的原子整個刪掉
+    delete(R, smiles, ui, cfg) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const q = R.get_qmol(cfg.query);
+        let hits;
+        try { hits = matches(mol, q); } finally { q.delete(); }
+        const label = cfg.queryLabel || cfg.query;
+        const gone = new Set(hits.flatMap((h) => h.atoms));
+        const two = el("div", { class: "rp-two" });
+        const panel = (title, smi, svg) => {
+          const p = el("div", { class: "rp-panel" });
+          p.append(el("h4", {}, title));
+          if (smi !== null) p.append(el("code", {}, smi));
+          const d = el("div");
+          d.innerHTML = svg;  // SVG 來自 RDKit
+          p.append(d);
+          return p;
+        };
+        two.append(panel("刪掉之前（要刪的部分塗上顏色）", mol.get_smiles(),
+          mol.get_svg_with_highlights(JSON.stringify({ atoms: [...gone], bonds: [], width: 300, height: 220 }))));
+        const block = deleteAtoms(mol.get_molblock(), gone);
+        const left = block ? R.get_mol(block) : null;
+        try {
+          if (!gone.size) ui.say("沒有找到 " + label + "，分子沒有改變。");
+          else if (!left || !left.is_valid() || !left.get_num_atoms()) ui.say("找到 " + hits.length + " 個 " + label + "，刪掉之後什麼都不剩。");
+          else ui.say("找到 " + hits.length + " 個 " + label + "，刪掉之後剩下 " + left.get_smiles() + "。");
+          if (left && left.is_valid() && left.get_num_atoms())
+            two.append(panel("刪掉之後", left.get_smiles(), left.get_svg(300, 220)));
+          else two.append(panel("刪掉之後", null, ""));
+        } finally { if (left) left.delete(); }
+        ui.pic.innerHTML = "";
+        ui.pic.append(two);
+      });
+    },
+    // 第 20 集：照反應規則改寫分子
+    reaction(R, smiles, ui, cfg) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const rxn = R.get_rxn(cfg.rxn);
+        const list = new R.MolList();
+        let out = null;
+        try {
+          list.append(mol);
+          const prods = rxn.run_reactants(list, 10);
+          try {
+            if (prods.size()) {
+              const first = prods.get(0);
+              const p = first.at(0);
+              try { out = { smiles: p.get_smiles(), svg: p.get_svg(300, 220), n: prods.size() }; } finally { p.delete(); first.delete(); }
+            }
+          } finally { prods.delete(); }
+        } finally { list.delete(); rxn.delete(); }
+        const q = R.get_qmol(cfg.match);
+        let hit;
+        try { hit = matches(mol, q)[0]; } finally { q.delete(); }
+        const two = el("div", { class: "rp-two" });
+        const panel = (title, smi, svg) => {
+          const p = el("div", { class: "rp-panel" });
+          p.append(el("h4", {}, title), el("code", {}, smi));
+          const d = el("div");
+          d.innerHTML = svg;  // SVG 來自 RDKit
+          p.append(d);
+          return p;
+        };
+        two.append(panel("反應前", mol.get_smiles(), mol.get_svg_with_highlights(JSON.stringify(
+          { atoms: hit ? hit.atoms : [], bonds: [], width: 300, height: 220 }))));
+        if (out) {
+          ui.say("符合規則，" + mol.get_smiles() + " 變成了 " + out.smiles + "。塗色的是規則比對到的原子。" +
+            (out.n > 1 ? "規則在這個分子裡比對到 " + out.n + " 個地方，這裡顯示第一個的結果。" : ""));
+          two.append(panel("反應後", out.smiles, out.svg));
+        } else {
+          ui.say("沒有反應：這個分子不符合規則（" + cfg.ruleLabel + "），電腦就不會動它。");
+        }
+        ui.pic.innerHTML = "";
+        if (cfg.ruleText) ui.pic.append(el("p", { class: "rp-status" }, cfg.ruleText));
+        ui.pic.append(two);
+      });
+    },
+
+    // 第 22 集：logP，標在「喜歡水 ← → 喜歡油」的橫條上
+    logp(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const v = JSON.parse(mol.get_descriptors()).CrippenClogP;
+        const shown = Math.abs(v) < 0.005 ? "0.00" : v.toFixed(2);
+        const side = v < -0.5 ? "比較喜歡水" : v > 0.5 ? "比較喜歡油" : "水和油都還能相處";
+        ui.say("logP = " + shown + "：" + side + "。");
+        ui.draw(mol.get_svg(SIZE.width, SIZE.height));
+        const lo = -4, hi = 4;
+        const x = (Math.min(hi, Math.max(lo, v)) - lo) / (hi - lo) * 100;
+        const bar = el("div", { class: "rp-scale" });
+        const pin = el("div", { class: "rp-pin" });
+        pin.style.left = x + "%";
+        const lab = el("div", { class: "rp-pinlabel" }, shown);
+        lab.style.left = x + "%";
+        bar.append(pin, lab);
+        const ends = el("div", { class: "rp-scale-ends" });
+        ends.append(el("span", {}, "← 喜歡水（" + lo + "）"), el("span", {}, "0"), el("span", {}, "喜歡油（+" + hi + "）→"));
+        ui.pic.prepend(bar, ends);
+      });
+    },
+    // 第 23 集：64 格的分子條碼，和上一個分子對照
+    fingerprint(R, smiles, ui) {
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const bits = mol.get_morgan_fp(JSON.stringify({ radius: 2, nBits: 64 }));
+        const on = [...bits].filter((b) => b === "1").length;
+        const st = ui.state;
+        const key = smiles.trim();
+        if (st.fpKey !== key) { st.prev = st.cur; st.cur = { key, bits }; st.fpKey = key; }
+        const prev = st.prev && st.prev.key !== key ? st.prev : null;
+        ui.say("64 格裡有 " + on + " 格是 1（深色）。" + (prev ? "下面一條是上一個分子 " + prev.key + " 的條碼，方便對照。" : "換一個分子，就能和這一條對照。"));
+        ui.draw(mol.get_svg(SIZE.width, SIZE.height));
+        const strip = (b) => {
+          const d = el("div", { class: "rp-bars" });
+          [...b].forEach((c) => d.append(el("span", c === "1" ? { class: "on" } : {})));
+          return d;
+        };
+        const parts = [el("p", { class: "rp-barlabel" }, "這個分子：" + key), strip(bits)];
+        if (prev) parts.push(el("p", { class: "rp-barlabel" }, "上一個分子：" + prev.key), strip(prev.bits));
+        ui.pic.prepend(...parts);
+      });
+    },
+    // 第 18 集：一個一個看每一處符合的地方
+    step(R, smiles, ui, cfg) {
+      const st = ui.state;
+      const key = smiles.trim();
+      if (st.key !== key) { st.key = key; st.i = 0; st.all = false; }
+      st.n = 0;
+      withMol(R, smiles, (mol) => {
+        if (!mol) { ui.say("電腦讀不懂這串字，可能打錯了。", true); return; }
+        const q = R.get_qmol(cfg.query);
+        try {
+          const hits = matches(mol, q);
+          const label = cfg.queryLabel || cfg.query;
+          const opts = { addAtomIndices: true, width: 400, height: 300 };
+          st.n = hits.length;
+          if (!hits.length) {
+            ui.say("沒有找到 " + label + "。");
+            ui.draw(mol.get_svg_with_highlights(JSON.stringify(opts)));
+            return;
+          }
+          const nums = (h) => h.atoms.join("、");
+          let shown;
+          if (st.all) {
+            shown = hits;
+            ui.say("共找到 " + hits.length + " 個 " + label + "，全部塗上顏色。每一個的原子編號：" + hits.map(nums).join("／") + "。");
+          } else {
+            st.i = Math.min(st.i, hits.length - 1);
+            shown = [hits[st.i]];
+            ui.say("第 " + (st.i + 1) + " 個／共 " + hits.length + " 個 " + label + "：原子 " + nums(hits[st.i]) + "。");
+          }
+          opts.atoms = [...new Set(shown.flatMap((h) => h.atoms))];
+          opts.bonds = [...new Set(shown.flatMap((h) => h.bonds))];
+          ui.draw(mol.get_svg_with_highlights(JSON.stringify(opts)));
+        } finally { q.delete(); }
+      });
+      ui.refreshButtons();
+    },
   };
+
+  // 第 17 集：一次排出很多分子，只回答「有」或「沒有」
+  function setupFilter(R, box, cfg) {
+    const mols = (cfg.molecules || []).slice();
+    const targets = cfg.targets || [];
+    const row = el("div", { class: "rp-row" });
+    const pickLabel = el("label", {}, "要找什麼");
+    const pick = el("select");
+    targets.forEach((t, i) => pick.append(el("option", { value: String(i) }, t.label)));
+    pickLabel.append(pick);
+    const inLabel = el("label", {}, "再加一個分子（輸入 SMILES）");
+    const input = el("input", { type: "text", spellcheck: "false", autocomplete: "off", placeholder: "例如 CCCO" });
+    inLabel.append(input);
+    const add = el("button", { type: "button" }, "加入");
+    row.append(pickLabel, inLabel, add);
+    const msg = el("p", { class: "rp-msg", "aria-live": "polite" });
+    const grid = el("div", { class: "rp-grid" });
+    box.append(row, msg, grid);
+
+    const run = () => {
+      const t = targets[+pick.value];
+      const q = R.get_qmol(t.query);
+      let yes = 0;
+      grid.innerHTML = "";
+      try {
+        mols.forEach((m) => {
+          withMol(R, m.smiles, (mol) => {
+            if (!mol) return;
+            const hit = matches(mol, q).length > 0;
+            if (hit) yes++;
+            const card = el("div", { class: "rp-card " + (hit ? "rp-yes" : "rp-no") });
+            const pic = el("div");
+            pic.innerHTML = mol.get_svg(180, 135);  // SVG 來自 RDKit
+            card.append(pic, el("div", {}, m.name), el("div", { class: "rp-mark" }, hit ? "✓ 有" : "✗ 沒有"));
+            grid.append(card);
+          });
+        });
+      } finally { q.delete(); }
+      msg.classList.remove("rp-bad");
+      msg.textContent = mols.length + " 個分子裡，有 " + yes + " 個找得到" + (/^[A-Za-z]/.test(t.label) ? " " : "") + t.label + "。";
+    };
+    add.addEventListener("click", () => {
+      const smi = input.value.trim();
+      if (!smi) return;
+      const ok = withMol(R, smi, (mol) => !!mol);
+      takeErrors();
+      if (!ok) { msg.textContent = "電腦讀不懂「" + smi + "」，可能打錯了。"; msg.classList.add("rp-bad"); return; }
+      mols.push({ name: "你加的：" + smi, smiles: smi });
+      input.value = "";
+      run();
+    });
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") add.click(); });
+    pick.addEventListener("change", run);
+    run();
+  }
+
+  // 第 19 集：從 MOL 格式裡刪掉指定的原子（編號從 0 開始），刪掉的原子接過的鍵也一起刪
+  function deleteAtoms(block, gone) {
+    const lines = block.split("\n");
+    const na = parseInt(lines[3].slice(0, 3)), nb = parseInt(lines[3].slice(3, 6));
+    const map = {};
+    const atoms = [];
+    for (let i = 0; i < na; i++) if (!gone.has(i)) { map[i + 1] = atoms.length + 1; atoms.push(lines[4 + i]); }
+    if (!atoms.length) return null;
+    const pad = (x) => String(x).padStart(3, " ");
+    const bonds = [];
+    for (let j = 0; j < nb; j++) {
+      const l = lines[4 + na + j];
+      const a = parseInt(l.slice(0, 3)), b = parseInt(l.slice(3, 6));
+      if (map[a] && map[b]) bonds.push(pad(map[a]) + pad(map[b]) + l.slice(6));
+    }
+    const props = [];
+    lines.slice(4 + na + nb).forEach((l) => {
+      if (l.startsWith("M  CHG")) {
+        const v = l.slice(9).trim().split(/\s+/).map(Number);
+        const keep = [];
+        for (let k = 0; k + 1 < v.length; k += 2) if (map[v[k]]) keep.push(pad(map[v[k]]) + " " + pad(v[k + 1]));
+        if (keep.length) props.push("M  CHG" + pad(keep.length) + keep.map((x) => " " + x).join(""));
+      }
+    });
+    return [lines[0], lines[1], lines[2], pad(atoms.length) + pad(bonds.length) + lines[3].slice(6),
+      ...atoms, ...bonds, ...props, "M  END", ""].join("\n");
+  }
+
+  // 第 14 集：勾選要排的分子，排成格子
+  function setupGrid(R, box, cfg) {
+    const mols = (cfg.molecules || []).slice();
+    const chosen = new Set(cfg.selected || mols.map((_, i) => i));
+    const row = el("div", { class: "rp-row" });
+    const perLabel = el("label", {}, "每一排放幾個");
+    const per = el("select");
+    [2, 3, 4].forEach((k) => per.append(el("option", { value: String(k) }, k + " 個")));
+    per.value = String(cfg.perRow || 3);
+    perLabel.append(per);
+    const inLabel = el("label", {}, "再加一個分子（輸入 SMILES）");
+    const input = el("input", { type: "text", spellcheck: "false", autocomplete: "off", placeholder: "例如 C(=O)N" });
+    inLabel.append(input);
+    const add = el("button", { type: "button" }, "加入");
+    row.append(perLabel, inLabel, add);
+    const picks = el("div", { class: "rp-legend" });
+    const msg = el("p", { class: "rp-msg", "aria-live": "polite" });
+    const grid = el("div", { class: "rp-grid" });
+    box.append(row, picks, msg, grid);
+
+    const drawPicks = () => {
+      picks.innerHTML = "";
+      mols.forEach((m, i) => {
+        const l = el("label", { class: "rp-check" });
+        const c = el("input", { type: "checkbox" });
+        c.checked = chosen.has(i);
+        c.addEventListener("change", () => { if (c.checked) chosen.add(i); else chosen.delete(i); run(); });
+        l.append(c, document.createTextNode(" " + m.name));
+        picks.append(l);
+      });
+    };
+    const run = () => {
+      grid.style.gridTemplateColumns = "repeat(" + per.value + ", minmax(0, 1fr))";
+      grid.innerHTML = "";
+      let k = 0;
+      mols.forEach((m, i) => {
+        if (!chosen.has(i)) return;
+        withMol(R, m.smiles, (mol) => {
+          if (!mol) return;
+          k++;
+          const card = el("div", { class: "rp-card" });
+          const d = el("div");
+          d.innerHTML = mol.get_svg(200, 150);  // SVG 來自 RDKit
+          card.append(d, el("div", {}, m.name));
+          grid.append(card);
+        });
+      });
+      msg.classList.remove("rp-bad");
+      msg.textContent = k ? "排了 " + k + " 個分子，每排 " + per.value + " 個。" : "還沒有勾選分子。";
+    };
+    add.addEventListener("click", () => {
+      const smi = input.value.trim();
+      if (!smi) return;
+      const ok = withMol(R, smi, (mol) => !!mol);
+      takeErrors();
+      if (!ok) { msg.textContent = "電腦讀不懂「" + smi + "」，可能打錯了。"; msg.classList.add("rp-bad"); return; }
+      mols.push({ name: "你加的：" + smi, smiles: smi });
+      chosen.add(mols.length - 1);
+      input.value = "";
+      drawPicks();
+      run();
+    });
+    input.addEventListener("keydown", (e) => { if (e.key === "Enter") add.click(); });
+    per.addEventListener("change", run);
+    drawPicks();
+    run();
+  }
+
+  // 第 15 集：同一個分子的兩種寫法，各自標上編號
+  function setupPairDraw(R, box, cfg) {
+    const pairs = cfg.pairs || [];
+    const row = el("div", { class: "rp-row" });
+    const pickLabel = el("label", {}, "挑一個分子");
+    const pick = el("select");
+    pairs.forEach((p, i) => pick.append(el("option", { value: String(i) }, p.name)));
+    pickLabel.append(pick);
+    row.append(pickLabel);
+    const inputs = ["左邊", "右邊"].map((side) => {
+      const l = el("label", {}, side + "的寫法");
+      const inp = el("input", { type: "text", spellcheck: "false", autocomplete: "off" });
+      l.append(inp);
+      row.append(l);
+      return inp;
+    });
+    const checks = {};
+    [["atom", "顯示原子編號", true], ["bond", "顯示鍵的編號", false]].forEach(([k, t, on]) => {
+      const cl = el("label", { class: "rp-check" });
+      checks[k] = el("input", { type: "checkbox" });
+      checks[k].checked = on;
+      cl.append(checks[k], document.createTextNode(" " + t));
+      row.append(cl);
+    });
+    const msg = el("p", { class: "rp-msg", "aria-live": "polite" });
+    const two = el("div", { class: "rp-two" });
+    box.append(row, msg, two);
+
+    const run = () => {
+      two.innerHTML = "";
+      const res = inputs.map((inp) => withMol(R, inp.value, (mol) => {
+        const p = el("div", { class: "rp-panel" });
+        if (!mol) { p.append(el("p", { class: "rp-bad" }, "電腦讀不懂這串字。")); two.append(p); return null; }
+        p.append(el("code", {}, inp.value.trim()));
+        const d = el("div");
+        d.innerHTML = mol.get_svg_with_highlights(JSON.stringify({   // SVG 來自 RDKit
+          addAtomIndices: checks.atom.checked, addBondIndices: checks.bond.checked, width: 300, height: 220 }));
+        p.append(d);
+        two.append(p);
+        return { canon: mol.get_smiles(), order: molInfo(mol).atoms.map((a, i) => i + " " + elem(a.z)[0]).join("、") };
+      }));
+      takeErrors();
+      msg.classList.remove("rp-bad");
+      const [a, b] = res;
+      if (!a || !b) { msg.textContent = "有一邊讀不懂，先把它改對。"; msg.classList.add("rp-bad"); return; }
+      msg.textContent = (a.canon === b.canon ? "兩邊是同一個分子。" : "注意：兩邊不是同一個分子。") +
+        "左邊的編號：" + a.order + "；右邊的編號：" + b.order + "。";
+    };
+    let timer = null;
+    inputs.forEach((inp) => inp.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(run, 250); }));
+    Object.values(checks).forEach((c) => c.addEventListener("change", run));
+    const load = () => { const p = pairs[+pick.value]; inputs[0].value = p.a; inputs[1].value = p.b; run(); };
+    pick.addEventListener("change", load);
+    if (pairs.length) load();
+  }
+
+  // 兩個輸入框的共用介面：挑一組分子、左右各一個 SMILES
+  function pairUI(box, cfg, extraRow) {
+    const pairs = cfg.pairs || [];
+    const row = el("div", { class: "rp-row" });
+    const pickLabel = el("label", {}, "挑一組分子");
+    const pick = el("select");
+    pairs.forEach((p, i) => pick.append(el("option", { value: String(i) }, p.name)));
+    pickLabel.append(pick);
+    row.append(pickLabel);
+    const inputs = ["左邊", "右邊"].map((side) => {
+      const l = el("label", {}, side + "的 SMILES");
+      const inp = el("input", { type: "text", spellcheck: "false", autocomplete: "off" });
+      l.append(inp);
+      row.append(l);
+      return inp;
+    });
+    const msg = el("p", { class: "rp-msg", "aria-live": "polite" });
+    const extra = el("div");
+    const two = el("div", { class: "rp-two" });
+    box.append(row, msg, extra, two);
+    const panel = (title, svg) => {
+      const p = el("div", { class: "rp-panel" });
+      p.append(el("h4", {}, title));
+      const d = el("div");
+      d.innerHTML = svg;  // SVG 來自 RDKit
+      p.append(d);
+      return p;
+    };
+    const ui = { inputs, msg, extra, two, panel,
+      say(t, bad) { msg.textContent = t; msg.classList.toggle("rp-bad", !!bad); } };
+    const start = (run) => {
+      let timer = null;
+      inputs.forEach((inp) => inp.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(run, 250); }));
+      const load = () => { const p = pairs[+pick.value]; inputs[0].value = p.a; inputs[1].value = p.b; run(); };
+      pick.addEventListener("change", load);
+      if (pairs.length) load();
+    };
+    return { ui, start };
+  }
+  // 兩個分子都讀得懂才呼叫 fn(molA, molB)
+  function withTwo(R, ui, fn) {
+    const [a, b] = ui.inputs.map((inp) => inp.value.trim() ? R.get_mol(inp.value.trim()) : null);
+    try {
+      ui.two.innerHTML = ""; ui.extra.innerHTML = "";
+      if (!a || !a.is_valid() || !b || !b.is_valid()) { takeErrors(); ui.say("有一邊讀不懂，先把它改對。", true); return; }
+      fn(a, b);
+    } finally { if (a) a.delete(); if (b) b.delete(); }
+  }
+
+  // 第 24 集：兩個分子的 Tanimoto 相似度
+  function setupSimilarity(R, box, cfg) {
+    const { ui, start } = pairUI(box, cfg);
+    start(() => withTwo(R, ui, (a, b) => {
+      const fa = a.get_morgan_fp(JSON.stringify({ radius: 2, nBits: 2048 }));
+      const fb = b.get_morgan_fp(JSON.stringify({ radius: 2, nBits: 2048 }));
+      let both = 0, either = 0;
+      for (let i = 0; i < fa.length; i++) {
+        const p = fa[i] === "1", q = fb[i] === "1";
+        if (p && q) both++;
+        if (p || q) either++;
+      }
+      const sim = either ? both / either : 0;
+      ui.say("相似度 = 兩邊都是 1 的格子 " + both + " 個 ÷ 至少一邊是 1 的格子 " + either + " 個 = " + sim.toFixed(3) + "。");
+      const bar = el("div", { class: "rp-scale" });
+      bar.style.background = "linear-gradient(90deg, #e9ecef, #0b7285)";
+      const pin = el("div", { class: "rp-pin" });
+      pin.style.left = sim * 100 + "%";
+      const lab = el("div", { class: "rp-pinlabel" }, sim.toFixed(3));
+      lab.style.left = sim * 100 + "%";
+      bar.append(pin, lab);
+      const ends = el("div", { class: "rp-scale-ends" });
+      ends.append(el("span", {}, "0：完全不像"), el("span", {}, "1：一模一樣"));
+      ui.extra.append(bar, ends);
+      ui.two.append(ui.panel("左邊", a.get_svg(300, 220)), ui.panel("右邊", b.get_svg(300, 220)));
+    }));
+  }
+
+  // 第 25 集：最大共同子結構，兩邊都塗色
+  function setupMcs(R, box, cfg) {
+    const { ui, start } = pairUI(box, cfg);
+    start(() => withTwo(R, ui, (a, b) => {
+      const list = new R.MolList();
+      let res;
+      try {
+        list.append(a); list.append(b);
+        res = JSON.parse(R.get_mcs_as_json(list, JSON.stringify({ Timeout: 5 })));
+      } finally { list.delete(); }
+      if (!res.numAtoms) {
+        ui.say("找不到共同的部分。");
+        ui.two.append(ui.panel("左邊", a.get_svg(300, 220)), ui.panel("右邊", b.get_svg(300, 220)));
+        return;
+      }
+      const q = R.get_qmol(res.smarts);
+      try {
+        const draw = (m) => {
+          const h = matches(m, q)[0] || { atoms: [], bonds: [] };
+          return m.get_svg_with_highlights(JSON.stringify({ atoms: h.atoms, bonds: h.bonds, width: 300, height: 220 }));
+        };
+        const na = a.get_num_atoms(), nb = b.get_num_atoms();
+        ui.say("共同的部分有 " + res.numAtoms + " 個原子（不算氫），已經在兩邊塗上顏色。左邊共 " + na + " 個原子，有 " +
+          (na - res.numAtoms) + " 個沒塗到；右邊共 " + nb + " 個原子，有 " + (nb - res.numAtoms) + " 個沒塗到。");
+        ui.two.append(ui.panel("左邊", draw(a)), ui.panel("右邊", draw(b)));
+      } finally { q.delete(); }
+    }));
+  }
+
+  // 第 26 集：用 Python 先算好的 3D 座標，畫成可以轉動的球棒模型
+  function setupSpin(box, cfg) {
+    const COLORS = { C: "#495057", O: "#f03e3e", N: "#339af0", H: "#f8f9fa", S: "#fcc419" };
+    const RADIUS = { H: 0.25, C: 0.4, N: 0.4, O: 0.42 };
+    const mols = cfg.molecules || [];
+    const row = el("div", { class: "rp-row" });
+    const pickLabel = el("label", {}, "挑一個分子");
+    const pick = el("select");
+    mols.forEach((m, i) => pick.append(el("option", { value: String(i) }, m.name)));
+    pickLabel.append(pick);
+    const pause = el("button", { type: "button" }, "暫停轉動");
+    row.append(pickLabel, pause);
+    const msg = el("p", { class: "rp-msg", "aria-live": "polite" });
+    const NS = "http://www.w3.org/2000/svg";
+    const svg = document.createElementNS(NS, "svg");
+    svg.setAttribute("viewBox", "-200 -150 400 300");
+    svg.setAttribute("class", "rp-3d");
+    svg.setAttribute("role", "img");
+    box.append(row, msg, svg);
+    let rx = -0.4, ry = 0, spinning = true, cur = null, scale = 50;
+    const show = () => {
+      const m = mols[+pick.value];
+      const n = m.atoms.length;
+      const c = [0, 1, 2].map((k) => m.atoms.reduce((t, a) => t + a[k + 1], 0) / n);
+      const pts = m.atoms.map((a) => [a[1] - c[0], a[2] - c[1], a[3] - c[2]]);
+      const r = Math.max(...pts.map((p) => Math.hypot(...p))) + 0.6;
+      scale = 130 / r;
+      cur = { m, pts };
+      const nh = m.atoms.filter((a) => a[0] === "H").length;
+      msg.textContent = m.name + "：" + n + " 個原子" + (nh ? "（其中 " + nh + " 個是氫）" : "") + "。按住拖曳可以自己轉。";
+      svg.setAttribute("aria-label", m.name + "的 3D 球棒模型");
+      draw();
+    };
+    const draw = () => {
+      if (!cur) return;
+      const cy = Math.cos(ry), sy = Math.sin(ry), cx = Math.cos(rx), sx = Math.sin(rx);
+      const P = cur.pts.map(([x, y, z]) => {
+        const x1 = x * cy + z * sy, z1 = -x * sy + z * cy;
+        const y1 = y * cx - z1 * sx, z2 = y * sx + z1 * cx;
+        const f = 6 / (6 - z2);  // 簡單的透視：近的大、遠的小
+        return [x1 * scale * f, -y1 * scale * f, z2, f];
+      });
+      const items = [];
+      cur.m.bonds.forEach(([i, j, o]) => items.push({ z: (P[i][2] + P[j][2]) / 2 - 0.01, bond: [i, j, o] }));
+      cur.m.atoms.forEach((a, i) => items.push({ z: P[i][2], atom: i }));
+      items.sort((p, q) => p.z - q.z);
+      svg.textContent = "";
+      items.forEach((it) => {
+        if (it.bond) {
+          const [i, j, o] = it.bond;
+          const dx = P[j][0] - P[i][0], dy = P[j][1] - P[i][1], L = Math.hypot(dx, dy) || 1;
+          const offs = o === 2 ? [-3, 3] : o === 3 ? [-5, 0, 5] : [0];
+          offs.forEach((k) => {
+            const line = document.createElementNS(NS, "line");
+            const ox = -dy / L * k, oy = dx / L * k;
+            line.setAttribute("x1", P[i][0] + ox); line.setAttribute("y1", P[i][1] + oy);
+            line.setAttribute("x2", P[j][0] + ox); line.setAttribute("y2", P[j][1] + oy);
+            line.setAttribute("stroke", "#adb5bd"); line.setAttribute("stroke-width", o > 1 ? 3 : 5);
+            line.setAttribute("stroke-linecap", "round");
+            svg.append(line);
+          });
+        } else {
+          const i = it.atom, sym = cur.m.atoms[i][0];
+          const circ = document.createElementNS(NS, "circle");
+          circ.setAttribute("cx", P[i][0]); circ.setAttribute("cy", P[i][1]);
+          circ.setAttribute("r", (RADIUS[sym] || 0.45) * scale * P[i][3]);
+          circ.setAttribute("fill", COLORS[sym] || "#ae3ec9");
+          circ.setAttribute("stroke", sym === "H" ? "#adb5bd" : "none");
+          svg.append(circ);
+        }
+      });
+    };
+    const tick = () => { if (spinning) { ry += 0.012; draw(); } requestAnimationFrame(tick); };
+    let drag = null;
+    svg.addEventListener("pointerdown", (e) => { drag = [e.clientX, e.clientY]; svg.setPointerCapture(e.pointerId); });
+    svg.addEventListener("pointermove", (e) => {
+      if (!drag) return;
+      ry += (e.clientX - drag[0]) * 0.01; rx += (e.clientY - drag[1]) * 0.01;
+      drag = [e.clientX, e.clientY];
+      draw();
+    });
+    svg.addEventListener("pointerup", () => { drag = null; });
+    pause.addEventListener("click", () => { spinning = !spinning; pause.textContent = spinning ? "暫停轉動" : "繼續轉動"; });
+    pick.addEventListener("change", show);
+    show();
+    requestAnimationFrame(tick);
+  }
+
+  // 第 7 集：兩個分子並排比較分子式
+  function setupCompare(R, box, cfg) {
+    const pairs = cfg.pairs || [];
+    const row = el("div", { class: "rp-row" });
+    const pickLabel = el("label", {}, "挑一組分子");
+    const pick = el("select");
+    pairs.forEach((p, i) => pick.append(el("option", { value: String(i) }, p.name)));
+    pickLabel.append(pick);
+    row.append(pickLabel);
+    const inputs = ["左邊", "右邊"].map((side) => {
+      const l = el("label", {}, side + "的 SMILES");
+      const inp = el("input", { type: "text", spellcheck: "false", autocomplete: "off" });
+      l.append(inp);
+      row.append(l);
+      return inp;
+    });
+    const msg = el("p", { class: "rp-msg", "aria-live": "polite" });
+    const two = el("div", { class: "rp-two" });
+    box.append(row, msg, two);
+
+    const run = () => {
+      two.innerHTML = "";
+      const res = inputs.map((inp) => withMol(R, inp.value, (mol) => {
+        const p = el("div", { class: "rp-panel" });
+        if (!mol) { p.append(el("p", { class: "rp-bad" }, "電腦讀不懂這串字。")); two.append(p); return null; }
+        const r = { formula: formulaOf(molInfo(mol)), smiles: mol.get_smiles() };
+        p.append(el("h4", {}, "分子式 " + r.formula), "整理後的 SMILES：", el("code", {}, r.smiles));
+        const d = el("div");
+        d.innerHTML = mol.get_svg(300, 220);  // SVG 來自 RDKit
+        p.append(d);
+        two.append(p);
+        return r;
+      }));
+      takeErrors();
+      msg.classList.remove("rp-bad");
+      const [a, b] = res;
+      if (!a || !b) { msg.textContent = "有一邊讀不懂，先把它改對。"; msg.classList.add("rp-bad"); return; }
+      const f = a.formula === b.formula ? "分子式一樣（" + a.formula + "）" : "分子式不一樣（" + a.formula + "、" + b.formula + "）";
+      const sm = a.smiles === b.smiles ? "整理後的 SMILES 一樣" : "整理後的 SMILES 不一樣";
+      const verdict = a.formula !== b.formula ? "兩種不同的分子，也不是同分異構物。"
+        : a.smiles === b.smiles ? "同一個分子，只是寫法不同。" : "同分異構物。";
+      msg.textContent = f + "，" + sm + " → " + verdict;
+    };
+    let timer = null;
+    inputs.forEach((inp) => inp.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(run, 250); }));
+    const load = () => { const p = pairs[+pick.value]; inputs[0].value = p.a; inputs[1].value = p.b; run(); };
+    pick.addEventListener("change", load);
+    if (pairs.length) load(); else run();
+  }
 
   function setup(box) {
     const mode = box.dataset.mode;
@@ -129,13 +1161,22 @@
     const cfg = cfgNode ? JSON.parse(cfgNode.textContent) : {};
     const mols = cfg.molecules || [];
     const fallback = box.querySelector(".rdkit-play-fallback");
+    // 3D 模型的座標已經事先算好，不用載入 RDKit
+    if (mode === "spin") { if (fallback) fallback.hidden = true; setupSpin(box, cfg); return; }
     const status = el("p", { class: "rp-status", "aria-live": "polite" },
       "正在載入 RDKit（約 2.4 MB，第一次會比較久）……");
     box.prepend(status);
 
     loadRDKit().then((R) => {
+      startErrorLog(R);
       status.remove();
       if (fallback) fallback.hidden = true;
+      if (mode === "filter") { setupFilter(R, box, cfg); return; }
+      if (mode === "compare") { setupCompare(R, box, cfg); return; }
+      if (mode === "grid") { setupGrid(R, box, cfg); return; }
+      if (mode === "similarity") { setupSimilarity(R, box, cfg); return; }
+      if (mode === "mcs") { setupMcs(R, box, cfg); return; }
+      if (mode === "pairdraw") { setupPairDraw(R, box, cfg); return; }
 
       const row = el("div", { class: "rp-row" });
       const pickLabel = el("label", {}, "挑一個分子");
@@ -146,9 +1187,19 @@
       const input = el("input", { type: "text", spellcheck: "false", autocomplete: "off" });
       inLabel.append(input);
       row.append(pickLabel, inLabel);
+      // pick 模式：多一個輸入原子編號的框
+      let extra = null;
+      if (mode === "pick") {
+        const l = el("label", {}, "要塗色的原子編號");
+        extra = el("input", { type: "text", spellcheck: "false", autocomplete: "off", placeholder: "例如 2 或 0,1" });
+        extra.value = cfg.pick || "";
+        extra.style.minWidth = "8rem";
+        l.append(extra);
+        row.append(l);
+      }
 
       // 勾選框：各集用 "toggles" 指定；hs 模式預設有「顯示氫原子」
-      const TOGGLES = { hs: "顯示氫原子", coordgen: "換一種排法" };
+      const TOGGLES = { hs: "顯示氫原子", hcount: "把氫也算進去", coordgen: "換一種排法" };
       const checks = {};
       (cfg.toggles || (mode === "hs" ? ["hs"] : [])).forEach((t) => {
         const cl = el("label", { class: "rp-check" });
@@ -159,10 +1210,33 @@
 
       const msg = el("p", { class: "rp-msg", "aria-live": "polite" });
       const pic = el("div", { class: "rp-svg" });
-      box.append(row, msg, pic);
+      box.append(row, msg);
+
+      // step 模式：上一個／下一個／全部顯示
+      const state = { key: null, i: 0, all: false, n: 0 };
+      const buttons = {};
+      if (mode === "step") {
+        const bar = el("div", { class: "rp-buttons" });
+        [["prev", "上一個"], ["next", "下一個"], ["all", "全部顯示"]].forEach(([k, t]) => {
+          buttons[k] = el("button", { type: "button" }, t);
+          bar.append(buttons[k]);
+        });
+        box.append(bar);
+        buttons.prev.addEventListener("click", () => { state.i = state.all ? state.n - 1 : (state.i - 1 + state.n) % state.n; state.all = false; run(); });
+        buttons.next.addEventListener("click", () => { state.i = state.all ? 0 : (state.i + 1) % state.n; state.all = false; run(); });
+        buttons.all.addEventListener("click", () => { state.all = true; run(); });
+      }
+      box.append(pic);
 
       const ui = {
         checks,
+        state,
+        pic,
+        extra,
+        refreshButtons() {
+          Object.values(buttons).forEach((b) => { b.disabled = state.n < 2; });
+          if (buttons.all) buttons.all.disabled = state.n < 2 || state.all;
+        },
         say(text, bad) { msg.textContent = text; msg.classList.toggle("rp-bad", !!bad); if (bad) pic.innerHTML = ""; },
         sayCode(a, codeA, b, codeB) {
           msg.textContent = ""; msg.classList.remove("rp-bad");
@@ -170,12 +1244,22 @@
         },
         // SVG 來自 RDKit 本身，不含使用者輸入的文字
         draw(svg) { pic.innerHTML = svg; },
+        // 把出問題的那個字標成紅色加底線，後面加說明
+        errorAt(text, idx) {
+          const line = el("p", { class: "rp-errline" });
+          const code = el("code");
+          [...text].forEach((ch, k) => code.append(k === idx ? el("span", { class: "rp-errchar" }, ch) : document.createTextNode(ch)));
+          if (idx >= text.length) code.append(el("span", { class: "rp-errchar" }, "\u00a0"));
+          line.append(code, el("span", { class: "rp-errnote" }, "← 這裡附近有問題"));
+          pic.append(line);
+        },
       };
 
       const run = () => MODES[mode](R, input.value, ui, cfg);
       let timer = null;
       pick.addEventListener("change", () => { input.value = mols[+pick.value].smiles; run(); });
       input.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(run, 250); });
+      if (extra) extra.addEventListener("input", () => { clearTimeout(timer); timer = setTimeout(run, 250); });
       Object.values(checks).forEach((c) => c.addEventListener("change", run));
       if (mols.length) input.value = mols[0].smiles;
       run();

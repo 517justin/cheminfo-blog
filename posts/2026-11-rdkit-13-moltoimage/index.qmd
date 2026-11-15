@@ -3,14 +3,12 @@ title: "電腦會畫結構式嗎？"
 description: "《用 RDKit 玩化學》第 13 集：用 MolToImage 和 MolToFile 把分子畫成圖、存成檔案。"
 date: 2026-11-11
 categories: ["用 RDKit 玩化學", "RDKit"]
-image: images/fallback.png
-draft: true
+image: images/card.png
+image-alt: "吉祥物小電腦和這一集的分子球棒模型"
 include-after-body: ../../_rdkit-play/widget.html
 ---
 
-*《用 RDKit 玩化學》第 13 集*
-
-前面每一集的小框都有一張結構圖，這些圖都是 RDKit 畫的。可是 SMILES 只告訴電腦哪些原子連在一起，沒有說每個原子要放在紙上的哪個位置。電腦怎麼把一串字變成一張圖？
+小框裡的結構圖，都是 RDKit 自己畫的。可是 SMILES 只告訴電腦哪些原子連在一起，沒有說每個原子要放在紙上的哪個位置。電腦怎麼把一串字變成一張圖？
 
 ## 動手玩
 

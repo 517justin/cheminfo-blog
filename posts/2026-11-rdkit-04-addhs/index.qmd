@@ -3,14 +3,12 @@ title: "氫原子躲到哪裡去了？"
 description: "《用 RDKit 玩化學》第 4 集：用 AddHs 和 RemoveHs 把氫原子加上去、再收回來。"
 date: 2026-11-11
 categories: ["用 RDKit 玩化學", "RDKit"]
-image: images/fallback.png
-draft: true
+image: images/card.png
+image-alt: "吉祥物小電腦和這一集的分子球棒模型"
 include-after-body: ../../_rdkit-play/widget.html
 ---
 
-*《用 RDKit 玩化學》第 4 集*
-
-酒精（乙醇）的化學式是 C2H6O：2 個碳、6 個氫、1 個氧，加起來 9 個原子。可是第 1 集的小框說，酒精只有 3 個原子。另外 6 個氫跑去哪裡了？
+酒精（乙醇）的化學式是 C2H6O：2 個碳、6 個氫、1 個氧，加起來 9 個原子。可是 RDKit 讀進 `CCO` 之後，卻說酒精只有 3 個原子。另外 6 個氫跑去哪裡了？
 
 ## 動手玩
 

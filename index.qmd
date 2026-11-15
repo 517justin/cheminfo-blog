@@ -1,13 +1,41 @@
 ---
-title: "化學資訊學筆記"
-description: "繁體中文化學資訊學（Cheminformatics）教學與實作筆記，涵蓋 RDKit、分子指紋、QSAR、虛擬篩選等主題。"
+title: "電腦也會化學"
+description: "在網頁上動手玩，看電腦怎麼認識分子。給所有人的化學資訊學入門。"
+image: images/site-card.png
+image-alt: "吉祥物小電腦，思考泡泡裡是咖啡因的球棒模型"
 listing:
+  id: all-posts
   contents: posts
-  sort: "date desc"
-  type: default
+  # 日期相同時依資料夾名稱排，同一天上線的集數會照順序出現
+  sort: ["date desc", "filename"]
+  type: grid
+  grid-columns: 3
+  fields: [image, title, description]
   categories: true
   sort-ui: false
   filter-ui: true
 page-layout: full
 title-block-banner: true
+sidebar: false
+toc: false
 ---
+
+::: {.series-hero}
+[![](images/series-card.png){.series-hero-img fig-alt="《用 RDKit 玩化學》系列介紹圖：吉祥物小電腦想著二氧化碳分子"}](rdkit/index.qmd)
+
+::: {.series-hero-text}
+[系列]{.series-hero-tag}
+
+## 用 RDKit 玩化學
+
+一集三分鐘，一集一個 RDKit 功能。不用會寫程式，在網頁上改一改分子，馬上看到電腦怎麼讀、怎麼畫、怎麼比較分子。
+
+[從第 1 集開始](posts/2026-11-rdkit-01-molfromsmiles/index.qmd){.btn .btn-primary}
+[看全部 26 集](rdkit/index.qmd){.btn .btn-outline-primary}
+:::
+:::
+
+## 所有文章 {.listing-heading}
+
+::: {#all-posts}
+:::

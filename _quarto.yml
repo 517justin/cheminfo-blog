@@ -5,6 +5,7 @@ project:
   render:
     - index.qmd
     - about.qmd
+    - rdkit/index.qmd
     - posts/*/index.qmd
 
 lang: zh-Hant
@@ -14,16 +15,102 @@ language: _language-zh-TW.yml
 website:
   # Repo：517justin/cheminfo-blog（GitHub Pages project site）
   title: "電腦也會化學"
+  description: "在網頁上動手玩，看電腦怎麼認識分子。給所有人的化學資訊學入門。"
+  image: images/site-card.png
   site-url: https://517justin.github.io/cheminfo-blog/
   repo-url: https://github.com/517justin/cheminfo-blog
-  navbar:
-    right:
-      - about.qmd
   open-graph: true
   twitter-card: true
+  page-navigation: true
+  navbar:
+    left:
+      - href: rdkit/index.qmd
+        text: 用 RDKit 玩化學
+    right:
+      - about.qmd
+      - icon: github
+        href: https://github.com/517justin/cheminfo-blog
+        aria-label: GitHub
+  # 系列側欄：依集數排列，Quarto 會在每集底部自動加上「上一集／下一集」。
+  sidebar:
+    - id: rdkit-play
+      title: "用 RDKit 玩化學"
+      style: docked
+      collapse-level: 1
+      contents:
+        - href: rdkit/index.qmd
+          text: "系列介紹"
+        - section: "電腦怎麼認識分子"
+          contents:
+            - href: posts/2026-11-rdkit-01-molfromsmiles/index.qmd
+              text: "1. 電腦怎麼讀懂二氧化碳？"
+            - href: posts/2026-11-rdkit-02-moltosmiles/index.qmd
+              text: "2. 同一個分子，為什麼有好幾種寫法？"
+            - href: posts/2026-11-rdkit-03-smiles-errors/index.qmd
+              text: "3. 打錯字，電腦會發現嗎？"
+            - href: posts/2026-11-rdkit-04-addhs/index.qmd
+              text: "4. 氫原子躲到哪裡去了？"
+            - href: posts/2026-11-rdkit-05-getnumatoms/index.qmd
+              text: "5. 分子裡有幾個原子、幾個鍵？"
+            - href: posts/2026-11-rdkit-06-molwt/index.qmd
+              text: "6. 電腦會算分子量嗎？"
+            - href: posts/2026-11-rdkit-07-getneighbors/index.qmd
+              text: "7. 這個原子旁邊接了誰？"
+            - href: posts/2026-11-rdkit-08-getatoms/index.qmd
+              text: "8. 每個原子是什麼元素？"
+            - href: posts/2026-11-rdkit-09-getbonds/index.qmd
+              text: "9. 單鍵、雙鍵、三鍵怎麼分？"
+            - href: posts/2026-11-rdkit-10-getringinfo/index.qmd
+              text: "10. 分子裡有沒有環？"
+            - href: posts/2026-11-rdkit-11-kekulize/index.qmd
+              text: "11. 苯為什麼有兩種寫法？"
+            - href: posts/2026-11-rdkit-12-getmolfrags/index.qmd
+              text: "12. 電腦看得懂食鹽嗎？"
+        - section: "把分子畫出來"
+          contents:
+            - href: posts/2026-11-rdkit-13-moltoimage/index.qmd
+              text: "13. 電腦會畫結構式嗎？"
+            - href: posts/2026-11-rdkit-14-molstogridimage/index.qmd
+              text: "14. 廚房裡的分子排排站"
+            - href: posts/2026-11-rdkit-15-addatomindices/index.qmd
+              text: "15. 幫原子編號"
+            - href: posts/2026-11-rdkit-16-highlightatoms/index.qmd
+              text: "16. 幫一塊結構塗顏色"
+        - section: "在分子裡找東西"
+          contents:
+            - href: posts/2026-11-rdkit-17-hassubstructmatch/index.qmd
+              text: "17. 這個分子有沒有 OH？"
+            - href: posts/2026-11-rdkit-18-getsubstructmatches/index.qmd
+              text: "18. 葡萄糖有幾個 OH？"
+        - section: "改造分子"
+          contents:
+            - href: posts/2026-11-rdkit-19-deletesubstructs/index.qmd
+              text: "19. 把酒精的 OH 拿掉會怎樣？"
+            - href: posts/2026-11-rdkit-20-reactionfromsmarts/index.qmd
+              text: "20. 酒為什麼會變醋？"
+        - section: "分子的特徵"
+          contents:
+            - href: posts/2026-11-rdkit-21-moltoinchikey/index.qmd
+              text: "21. 分子也有身分證？"
+            - href: posts/2026-11-rdkit-22-mollogp/index.qmd
+              text: "22. 喜歡水還是喜歡油？"
+            - href: posts/2026-11-rdkit-23-morganfingerprint/index.qmd
+              text: "23. 分子的條碼"
+            - href: posts/2026-11-rdkit-24-tanimotosimilarity/index.qmd
+              text: "24. 兩個分子有多像？"
+            - href: posts/2026-11-rdkit-25-findmcs/index.qmd
+              text: "25. 咖啡因和巧克力裡的可可鹼差在哪？"
+            - href: posts/2026-11-rdkit-26-embedmolecule/index.qmd
+              text: "26. 分子其實是立體的"
+  page-footer:
+    left: "內容採用 [CC BY 4.0](https://creativecommons.org/licenses/by/4.0/deed.zh-hant) 授權 · Cheninformatics"
+    right:
+      - icon: github
+        href: https://github.com/517justin/cheminfo-blog
+        aria-label: GitHub
 
 format:
   html:
-    theme: cosmo
+    theme: [cosmo, custom.scss]
     toc: true
     code-copy: true

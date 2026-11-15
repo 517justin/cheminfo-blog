@@ -3,35 +3,40 @@ title: "這個分子有沒有 OH？"
 description: "《用 RDKit 玩化學》第 17 集：用 HasSubstructMatch 讓電腦在分子裡找出 OH。"
 date: 2026-11-11
 categories: ["用 RDKit 玩化學", "RDKit"]
-image: images/fallback.png
-draft: true
+image: images/card.png
+image-alt: "吉祥物小電腦和這一集的分子球棒模型"
 include-after-body: ../../_rdkit-play/widget.html
 ---
-
-*《用 RDKit 玩化學》第 17 集*
 
 酒精（乙醇）和甲醇都有一個 OH，咖啡因沒有。分子小的時候看一眼就知道，可是要從一萬個分子裡挑出有 OH 的，一個一個看就太累了，這種事交給電腦最適合。
 
 ## 動手玩
 
-從選單挑一個分子，或在輸入框改 SMILES，看看電腦有沒有找到 OH。找到的話，下方結構圖裡的 OH 會塗上顏色。
+下面一次排了 9 個分子。在「要找什麼」選 OH，電腦會把每個分子檢查一遍：找得到的亮起來、打勾，找不到的變灰。也可以換成找碳氧雙鍵或氮，或在輸入框打一個 SMILES，按「加入」把自己的分子放進來。
 
 ```{=html}
-<div class="rdkit-play" data-mode="substruct">
+<div class="rdkit-play" data-mode="filter">
 <script type="application/json">
-{"query": "[OX2H]", "queryLabel": "OH",
+{"targets": [
+  {"label": "OH", "query": "[OX2H]"},
+  {"label": "碳氧雙鍵（C=O）", "query": "[#6]=[#8]"},
+  {"label": "氮（N）", "query": "[#7]"}
+ ],
  "molecules": [
   {"name": "酒精（乙醇）", "smiles": "CCO"},
   {"name": "甲醇", "smiles": "CO"},
   {"name": "醋酸（乙酸）", "smiles": "CC(=O)O"},
+  {"name": "葡萄糖", "smiles": "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O"},
+  {"name": "甘油", "smiles": "OCC(O)CO"},
   {"name": "咖啡因", "smiles": "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"},
   {"name": "二氧化碳", "smiles": "O=C=O"},
-  {"name": "葡萄糖", "smiles": "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O"}
+  {"name": "苯", "smiles": "c1ccccc1"},
+  {"name": "尿素", "smiles": "NC(N)=O"}
 ]}
 </script>
 <figure class="rdkit-play-fallback">
-<img src="images/fallback.png" alt="酒精的結構圖，其中的 OH 塗上了顏色。">
-<figcaption>電腦在酒精裡找到 OH，並塗上顏色。</figcaption>
+<img src="images/fallback.png" alt="9 個分子排成三排，有 OH 的酒精、甲醇、醋酸、葡萄糖、甘油標示 yes，咖啡因、二氧化碳、苯、尿素標示 no。">
+<figcaption>9 個分子裡，酒精、甲醇、醋酸、葡萄糖、甘油有 OH。</figcaption>
 </figure>
 </div>
 ```
@@ -40,9 +45,9 @@ include-after-body: ../../_rdkit-play/widget.html
 
 電腦得先知道「OH」長什麼樣子，所以我們把 OH 寫成搜尋條件 `[OX2H]`，意思是「一個氧，總共接兩樣東西，其中一個是氫」。這個寫法不用記，知道代表 OH 就好。
 
-接著，`HasSubstructMatch` 會在分子裡逐一比對原子，看能不能找到符合條件的地方，答案只有「有」或「沒有」。這種找法叫做 **子結構搜尋**（substructure search）。
+接著，`HasSubstructMatch` 拿這個條件到每個分子裡逐一比對原子，答案只有「有」或「沒有」，不管有幾個、在哪裡。這種找法叫做 **子結構搜尋**（substructure search）。只要一個是非題，就能把一大堆分子分成兩堆，資料庫裡有幾萬個分子也一樣快。
 
-為什麼不直接找字母 O？二氧化碳和咖啡因也有氧，但這些氧是用雙鍵接在碳上，旁邊沒有氫，不是 OH。子結構搜尋比對的是原子怎麼連接，不是 SMILES 裡有沒有某個字母。
+為什麼不直接找字母 O？二氧化碳、咖啡因和尿素也有氧，但這些氧用雙鍵接在碳上，旁邊沒有氫，不是 OH。換成找碳氧雙鍵，亮起來的就變成醋酸、咖啡因、二氧化碳和尿素。子結構搜尋比對的是原子怎麼連接，不是 SMILES 裡有沒有某個字母。
 
 ## 真正的程式
 
@@ -50,19 +55,21 @@ include-after-body: ../../_rdkit-play/widget.html
 from rdkit import Chem
 
 oh = Chem.MolFromSmarts("[OX2H]")   # 代表 OH 的搜尋條件
-for smi in ["CCO", "CN1C=NC2=C1C(=O)N(C(=O)N2C)C"]:
-    print(smi, Chem.MolFromSmiles(smi).HasSubstructMatch(oh))
+molecules = {"酒精": "CCO", "咖啡因": "CN1C=NC2=C1C(=O)N(C(=O)N2C)C",
+             "葡萄糖": "OC[C@H]1OC(O)[C@H](O)[C@@H](O)[C@@H]1O", "苯": "c1ccccc1"}
+for name, smi in molecules.items():
+    print(name, Chem.MolFromSmiles(smi).HasSubstructMatch(oh))
 ```
 
-酒精印出 `True`，咖啡因印出 `False`。
+酒精和葡萄糖印出 `True`，咖啡因和苯印出 `False`。
 
 [![在 Colab 開啟](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/517justin/cheminfo-blog/blob/main/posts/2026-11-rdkit-17-hassubstructmatch/ep17.ipynb)
 [下載這一集的 notebook](ep17.ipynb)
 
 ## 換你試
 
-- 在小框裡選葡萄糖，數數看塗了幾個 OH。下一集會讓電腦自己數。
-- 把程式裡的咖啡因換成 `"CO"`（甲醇），看看答案會不會變成 `True`。
+- 把「要找什麼」換成氮（N），看看 9 個分子裡剩下哪幾個亮著。
+- 在輸入框打 `CCCO`（丙醇），按「加入」，再看看它有沒有 OH。
 
 ## 延伸閱讀
 
