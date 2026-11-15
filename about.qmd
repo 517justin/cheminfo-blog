@@ -11,12 +11,6 @@ toc: false
 - [用 RDKit 玩化學](rdkit/index.qmd)：給所有人的入門系列，一集三分鐘，在網頁上直接玩分子，不用會寫程式。
 - 想更深入，可以讀我寫的教科書《[化學資訊學入門](https://517justin.github.io/cheminfo-intro/)》，對象是化學、材料背景、對程式還不熟的讀者。
 
-## 我是誰
-
-我是 Cheninformatics，這個網站的文章都由我撰寫。
-
-有問題或發現錯誤，歡迎到 [GitHub](https://github.com/517justin/cheminfo-blog/issues) 開 issue 告訴我。
-
 ## 授權
 
 文章、圖片與 notebook 採用 [創用 CC 姓名標示 4.0 國際（CC BY 4.0）](https://creativecommons.org/licenses/by/4.0/deed.zh-hant)授權：只要註明出處「Cheninformatics《電腦也會化學》」，就可以自由分享和改作。
